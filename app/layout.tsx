@@ -1,4 +1,14 @@
 import { Providers } from "./providers";
+import { Navigation } from "./components/Navigation";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+  title: "PlayStation Cards Ecommerce",
+  description: "Buy PlayStation cards online",
+};
 
 export default function RootLayout({
   children,
@@ -7,11 +17,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${inter.className} min-h-screen flex flex-col`}>
         <Providers>
-          <nav>{/* Add navigation menu items */}</nav>
-          <main>{children}</main>
-          <footer>{/* Add footer content */}</footer>
+          <Navigation />
+          <main className="flex-grow">{children}</main>
+          <footer className="bg-gray-800 text-white py-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              © 2023 PlayStation Cards Ecommerce. All rights reserved.
+            </div>
+          </footer>
         </Providers>
       </body>
     </html>
