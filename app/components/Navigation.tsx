@@ -1,17 +1,44 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { ShoppingCart, User, LogIn, LogOut, Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Navigation() {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
+  useEffect(() => {
+    const fetchCartItemCount = async () => {
+      try {
+        const response = await fetch("/api/cart");
+        if (response.ok) {
+          const data = await response.json();
+          setCartItemCount(
+            data.reduce(
+              (sum: number, item: { quantity: number }) => sum + item.quantity,
+              0
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching cart item count:", error);
+      }
+    };
+
+    fetchCartItemCount();
+
+    // Set up an interval to periodically update the cart item count
+    const intervalId = setInterval(fetchCartItemCount, 5000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <nav className="bg-white shadow-md">
@@ -31,7 +58,7 @@ export function Navigation() {
                 Home
               </Link>
               <Link
-                href="/products"
+                href="/product"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
                 Products
@@ -103,12 +130,32 @@ export function Navigation() {
           >
             Products
           </Link>
-          <Link
-            href="/cart"
-            className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-          >
-            Cart
-          </Link>
+          <div className="container mx-auto px-6 py-3 flex justify-between items-center">
+            <Link href="/" className="text-xl font-bold text-gray-800">
+              PlayStation Cards
+            </Link>
+            <div className="flex items-center">
+              <Link href="/" className="text-gray-800 hover:text-blue-500 mx-4">
+                Home
+              </Link>
+              <Link
+                href="/products"
+                className="text-gray-800 hover:text-blue-500 mx-4"
+              >
+                Products
+              </Link>
+              <Button asChild variant="ghost" className="relative">
+                <Link href="/cart">
+                  <ShoppingCart className="h-6 w-6" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+            </div>
+          </div>
           {session ? (
             <>
               <Link

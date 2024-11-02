@@ -2,29 +2,16 @@ import Link from "next/link";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 
-export default async function Home() {
+export default async function Products() {
   const featuredProducts = await prisma.product.findMany({
     take: 3,
   });
 
   return (
     <div className="container mx-auto p-4">
-      {/* Hero Section */}
-      <section className="bg-gray-100 rounded-lg p-8 mb-8">
-        <h1 className="text-4xl font-bold mb-4">
-          Welcome to PlayStation Cards
-        </h1>
-        <p className="text-xl mb-4">
-          Discover the best deals on PlayStation gift cards and subscriptions!
-        </p>
-        <Button asChild>
-          <Link href="#featured-products">Shop Now</Link>
-        </Button>
-      </section>
-
       {/* Featured Products */}
       <section id="featured-products" className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+        <h2 className="text-2xl font-bold mb-4">All Products</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {featuredProducts.map((product) => (
             <div key={product.id} className="border p-4 rounded-lg">
@@ -44,7 +31,7 @@ export default async function Home() {
       </section>
 
       {/* Categories */}
-      <section className="mb-8">
+      {/* <section className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Categories</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {["Gift Cards", "Subscriptions", "DLC", "Special Offers"].map(
@@ -63,10 +50,10 @@ export default async function Home() {
             )
           )}
         </div>
-      </section>
+      </section> */}
 
       {/* Why Choose Us */}
-      <section className="bg-gray-100 rounded-lg p-8 mb-8">
+      {/* <section className="bg-gray-100 rounded-lg p-8 mb-8">
         <h2 className="text-2xl font-bold mb-4">Why Choose Us</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
@@ -89,10 +76,10 @@ export default async function Home() {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
 
       {/* Newsletter Signup */}
-      <section className="bg-blue-500 text-white rounded-lg p-8">
+      {/* <section className="bg-blue-500 text-white rounded-lg p-8">
         <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
         <p className="mb-4">
           Subscribe to our newsletter for exclusive deals and updates!
@@ -106,7 +93,7 @@ export default async function Home() {
           />
           <Button type="submit">Subscribe</Button>
         </form>
-      </section>
+      </section> */}
     </div>
   );
 }
