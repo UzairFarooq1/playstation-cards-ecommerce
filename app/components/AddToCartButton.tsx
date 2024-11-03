@@ -1,40 +1,78 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
 
-export default function AddToCartButton({ productId }: { productId: string }) {
-  const [isAdding, setIsAdding] = useState(false);
+interface AddToCartButtonProps {
+  productId: string;
+  className?: string;
+}
+
+export default function AddToCartButton({
+  productId,
+  className,
+}: AddToCartButtonProps) {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const addToCart = async () => {
-    setIsAdding(true);
+    // Validate productId before making the request
+    if (
+      !productId ||
+      typeof productId !== "string" ||
+      productId.trim() === ""
+    ) {
+      toast.error("Invalid product ID");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId }),
-      });
-      if (response.ok) {
-        alert("Product added to cart!");
-        router.refresh(); // This will trigger a re-render of the Navigation component
+      setLoading(true);
+      console.log("Adding product to cart with ID:", productId);
+
+      const response = await fetch(
+        `/api/cart/${encodeURIComponent(productId)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      const result = await response.json();
+      console.log("Server response:", result);
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to add to cart");
+      }
+
+      if (result.success) {
+        toast.success("Item added to cart");
+        router.refresh();
       } else {
-        throw new Error("Failed to add to cart");
+        throw new Error(result.error || "Failed to add to cart");
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
-      alert("Failed to add product to cart. Please try again.");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to add to cart"
+      );
     } finally {
-      setIsAdding(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Button onClick={addToCart} disabled={isAdding}>
-      {isAdding ? "Adding..." : "Add to Cart"}
+    <Button
+      onClick={addToCart}
+      disabled={loading || !productId}
+      className={className}
+    >
+      {loading ? "Adding..." : "Add to Cart"}
     </Button>
   );
 }

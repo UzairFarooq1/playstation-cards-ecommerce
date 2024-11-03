@@ -15,6 +15,7 @@ interface CartItem {
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -22,12 +23,19 @@ export default function CartPage() {
         const response = await fetch("/api/cart");
         if (response.ok) {
           const data = await response.json();
-          setCartItems(data);
+          // Validate and sanitize the cart data
+          const validatedItems = data.map((item: CartItem) => ({
+            ...item,
+            price: Number(item.price) || 0, // Convert price to number or default to 0
+            quantity: Math.max(1, Math.round(Number(item.quantity)) || 1), // Ensure quantity is a positive integer
+          }));
+          setCartItems(validatedItems);
         } else {
           throw new Error("Failed to fetch cart");
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
+        setError("Failed to load cart items. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -37,6 +45,8 @@ export default function CartPage() {
   }, []);
 
   const updateQuantity = async (id: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Prevent negative quantities
+
     try {
       const response = await fetch("/api/cart", {
         method: "PUT",
@@ -57,6 +67,7 @@ export default function CartPage() {
       }
     } catch (error) {
       console.error("Error updating quantity:", error);
+      setError("Failed to update quantity. Please try again.");
     }
   };
 
@@ -72,16 +83,23 @@ export default function CartPage() {
 
       if (response.ok) {
         setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+        setError(null); // Clear any existing errors
       } else {
         throw new Error("Failed to remove item");
       }
     } catch (error) {
       console.error("Error removing item:", error);
+      setError("Failed to remove item. Please try again.");
     }
   };
 
+  const calculateItemTotal = (price: number, quantity: number): number => {
+    const itemTotal = Number(price) * Math.max(1, Math.round(Number(quantity)));
+    return isNaN(itemTotal) ? 0 : itemTotal;
+  };
+
   const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + calculateItemTotal(item.price, item.quantity),
     0
   );
 
@@ -92,6 +110,11 @@ export default function CartPage() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
       {cartItems.length === 0 ? (
         <p>
           Your cart is empty.{" "}
@@ -114,7 +137,13 @@ export default function CartPage() {
                 />
                 <div className="flex-grow">
                   <h2 className="text-xl font-semibold">{item.name}</h2>
-                  <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                  <p className="text-gray-600">
+                    ${Number(item.price).toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Subtotal: $
+                    {calculateItemTotal(item.price, item.quantity).toFixed(2)}
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button

@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface CartItem {
   id: string;
@@ -20,11 +26,9 @@ export default function CheckoutPage() {
     name: "",
     email: "",
     address: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
   });
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -38,13 +42,18 @@ export default function CheckoutPage() {
         }
       } catch (error) {
         console.error("Error fetching cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch cart. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCart();
-  }, []);
+  }, [toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -54,7 +63,10 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/checkout", {
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error("Stripe failed to initialize");
+
+      const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,15 +77,19 @@ export default function CheckoutPage() {
         }),
       });
 
-      if (response.ok) {
-        alert("Order placed successfully!");
-        router.push("/order-confirmation");
-      } else {
-        throw new Error("Checkout failed");
+      const { sessionId } = await response.json();
+      const result = await stripe.redirectToCheckout({ sessionId });
+
+      if (result.error) {
+        throw new Error(result.error.message);
       }
     } catch (error) {
       console.error("Error during checkout:", error);
-      alert("Checkout failed. Please try again.");
+      toast({
+        title: "Error",
+        description: "Checkout failed. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -108,7 +124,7 @@ export default function CheckoutPage() {
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-semibold mb-4">Payment Information</h2>
+          <h2 className="text-2xl font-semibold mb-4">Shipping Information</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
@@ -143,44 +159,8 @@ export default function CheckoutPage() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <Input
-                type="text"
-                id="cardNumber"
-                name="cardNumber"
-                value={formData.cardNumber}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="expiryDate">Expiry Date</Label>
-                <Input
-                  type="text"
-                  id="expiryDate"
-                  name="expiryDate"
-                  value={formData.expiryDate}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="MM/YY"
-                />
-              </div>
-              <div>
-                <Label htmlFor="cvv">CVV</Label>
-                <Input
-                  type="text"
-                  id="cvv"
-                  name="cvv"
-                  value={formData.cvv}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
             <Button type="submit" className="w-full">
-              Place Order
+              Proceed to Payment
             </Button>
           </form>
         </div>

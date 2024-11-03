@@ -1,64 +1,102 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET(
+export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { productId: string } }
 ) {
   try {
-    const product = await prisma.product.findUnique({
-      where: { id: params.id },
-    });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      console.error("Unauthorized request: No session or email found");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
+    console.log("Processing request for product:", params.productId);
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) {
+      console.error("User not found for email:", session.user.email);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const { productId } = params;
+
+    // Check if the product exists in the database
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
     if (!product) {
+      console.error("Product not found for ID:", productId);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json(product);
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const body = await request.json();
-    const updatedProduct = await prisma.product.update({
-      where: { id: params.id },
-      data: body,
+    // Check if cart item already exists
+    const existingCartItem = await prisma.cartItem.findUnique({
+      where: {
+        userId_productId: {
+          userId: user.id,
+          productId: productId,
+        },
+      },
     });
 
-    return NextResponse.json(updatedProduct);
-  } catch (error) {
-    console.error("Error updating product:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
-  }
-}
+    let cartItem;
+    if (existingCartItem) {
+      // Update quantity of existing cart item
+      cartItem = await prisma.cartItem.update({
+        where: {
+          id: existingCartItem.id,
+        },
+        data: {
+          quantity: existingCartItem.quantity + 1,
+        },
+        include: {
+          product: true,
+        },
+      });
+    } else {
+      // Create a new cart item
+      cartItem = await prisma.cartItem.create({
+        data: {
+          userId: user.id,
+          productId: productId,
+          quantity: 1,
+        },
+        include: {
+          product: true,
+        },
+      });
+    }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    await prisma.product.delete({
-      where: { id: params.id },
+    console.log("Cart item created/updated successfully:", cartItem);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: cartItem.id,
+        quantity: cartItem.quantity,
+        product: {
+          id: cartItem.product.id,
+          name: cartItem.product.name,
+          price: cartItem.product.price,
+          imageUrl: cartItem.product.imageUrl,
+        },
+      },
     });
-
-    return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {
-    console.error("Error deleting product:", error);
+    console.error("Server error while adding to cart:", error);
+
+    // Return a JSON error response for client parsing
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      {
+        success: false,
+        error: "Failed to add item to cart",
+      },
       { status: 500 }
     );
   }
