@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function AddToCartButton({ productId }: { productId: string }) {
   const [isAdding, setIsAdding] = useState(false);
+  const router = useRouter();
 
   const addToCart = async () => {
     setIsAdding(true);
@@ -18,6 +20,7 @@ export default function AddToCartButton({ productId }: { productId: string }) {
       });
       if (response.ok) {
         alert("Product added to cart!");
+        router.refresh(); // This will trigger a re-render of the Navigation component
       } else {
         throw new Error("Failed to add to cart");
       }

@@ -1,11 +1,14 @@
 import Link from "next/link";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
-
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 export default async function Home() {
+  const session = await getServerSession(authOptions);
   const featuredProducts = await prisma.product.findMany({
     take: 3,
   });
+  console.log("Session:", session);
 
   return (
     <div className="container mx-auto p-4">

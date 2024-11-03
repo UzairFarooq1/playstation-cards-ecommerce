@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma from "@/app/lib/prisma";
-import AddToCartButton from "@/app/components/AddToCartButton";
 import RelatedProducts from "@/app/components/RelatedProducts";
+import AddToCartButton from "@/app/components/AddToCartButton";
 
 export async function generateStaticParams() {
   const products = await prisma.product.findMany({ select: { id: true } });

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { toast } from "@/components/ui/use-toast";
 
 export async function GET() {
   try {
@@ -18,7 +17,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, description, price, imageUrl } = body;
+    console.log("Received product data:", body);
+
+    const { name, description, price, imageUrl, category, stockQuantity, sku } =
+      body;
 
     // Validate the input
     if (!name || !price || typeof price !== "number") {
@@ -32,9 +34,13 @@ export async function POST(request: NextRequest) {
         description,
         price,
         imageUrl,
+        category,
+        stockQuantity: parseInt(stockQuantity),
+        sku,
       },
     });
-    toast("Successfully added product");
+
+    console.log("Product created:", product);
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
@@ -46,7 +52,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle unsupported methods
 export async function PUT() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
