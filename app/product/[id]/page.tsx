@@ -43,7 +43,7 @@ export default async function ProductPage({
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full rounded-lg shadow-lg"
+            className="w-full rounded-lg shadow-lg h-[450px] object-cover"
           />
         </div>
         <div>
