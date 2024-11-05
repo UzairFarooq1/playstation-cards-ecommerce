@@ -3,9 +3,7 @@ import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 
 export default async function Products() {
-  const featuredProducts = await prisma.product.findMany({
-    take: 3,
-  });
+  const featuredProducts = await prisma.product.findMany({});
 
   return (
     <div className="container mx-auto p-4">

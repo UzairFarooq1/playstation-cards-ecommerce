@@ -1,4 +1,3 @@
-// app/order-confirmation/[orderId]/page.tsx
 import { notFound } from "next/navigation";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ export default async function OrderConfirmationPage({
   });
 
   if (!order) {
-    notFound();
+    return notFound();
   }
 
   return (

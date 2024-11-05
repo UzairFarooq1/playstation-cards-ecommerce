@@ -5,18 +5,14 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("Checkout process started");
-
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      console.log("Unauthorized: No valid session");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { cartItems, customerInfo } = await request.json();
-    console.log("Received checkout data:", { cartItems, customerInfo });
+    const { name, phone, address } = await request.json();
+    console.log("Received checkout data:", { name, phone, address });
 
-    // Fetch the user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -26,100 +22,74 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log("User found:", user.id);
+    const cartItems = await prisma.cartItem.findMany({
+      where: { userId: user.id },
+      include: { product: true },
+    });
+    console.log("Cart items:", cartItems);
 
-    // Fetch full product details for each cart item
-    const productsWithDetails = await Promise.all(
-      cartItems.map(async (item: { productId: string; quantity: number }) => {
-        console.log(item.productId);
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId },
-        });
-        if (!product) {
-          console.error(`Product not found: ${item.productId}`);
-          throw new Error(`Product not found: ${item.productId}`);
-        }
-        return { ...product, quantity: item.quantity };
-      })
+    if (cartItems.length === 0) {
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
+
+    const total = cartItems.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
     );
 
-    console.log("Products fetched:", productsWithDetails);
-
-    // Create the order in the database
     const order = await prisma.order.create({
       data: {
         userId: user.id,
         status: "PENDING",
-        total: productsWithDetails.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        ),
-        shippingAddress: customerInfo.address,
+        total,
+        shippingAddress: address,
         items: {
-          create: productsWithDetails.map((item) => ({
-            productId: item.id,
+          create: cartItems.map((item) => ({
+            productId: item.productId,
             quantity: item.quantity,
-            price: item.price,
+            price: item.product.price,
           })),
         },
       },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
+      include: { items: { include: { product: true } } },
     });
-
-    console.log("Order created:", order);
-
-    // Prepare the message for WhatsApp
-    const message =
-      `New Order #${order.id}:\n\n` +
-      order.items
-        .map(
-          (item) =>
-            `${item.product.name} x${item.quantity} - $${
-              item.price * item.quantity
-            }`
-        )
-        .join("\n") +
-      `\n\nTotal: $${order.total}\n` +
-      `Shipping Address: ${order.shippingAddress}\n` +
-      `Customer: ${customerInfo.name} (${customerInfo.email})`;
-
-    console.log("WhatsApp message:", message);
-
-    // Generate WhatsApp Click to Chat link
-    const whatsappLink = generateWhatsAppLink("254791495274", message);
+    console.log("Created order:", order);
 
     // Clear the user's cart
     await prisma.cartItem.deleteMany({
       where: { userId: user.id },
     });
 
-    console.log("Cart cleared for user:", user.id);
+    // Generate WhatsApp message
+    const message = generateWhatsAppMessage(order, name, phone, address);
+    const whatsappUrl = `https://wa.me/254791495274?text=${encodeURIComponent(
+      message
+    )}`;
 
-    return NextResponse.json({
-      success: true,
-      orderId: order.id,
-      whatsappLink,
-    });
+    return NextResponse.json({ success: true, whatsappUrl, orderId: order.id });
   } catch (error) {
-    console.error("Error processing checkout:", error);
+    console.error("Checkout error:", error);
     return NextResponse.json(
-      {
-        error: "Internal Server Error",
-        details: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      },
+      { error: "Failed to process checkout", details: error.message },
       { status: 500 }
     );
   }
 }
 
-function generateWhatsAppLink(phoneNumber: string, message: string): string {
-  const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+function generateWhatsAppMessage(
+  order,
+  name: string,
+  phone: string,
+  address: string
+): string {
+  let message = `New Order:\n\nCustomer: ${name}\nPhone: ${phone}\nAddress: ${address}\n\nOrder Details:\n`;
+
+  order.items.forEach((item) => {
+    message += `${item.product.name} x${item.quantity} - $${(
+      item.price * item.quantity
+    ).toFixed(2)}\n`;
+  });
+
+  message += `\nTotal: $${order.total.toFixed(2)}`;
+  return message;
 }

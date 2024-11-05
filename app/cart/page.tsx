@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CartItem {
   id: string;
@@ -16,6 +19,11 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [isCheckingOut, setIsCheckingOut] = useState(false); // New state for checking out
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -23,11 +31,10 @@ export default function CartPage() {
         const response = await fetch("/api/cart");
         if (response.ok) {
           const data = await response.json();
-          // Validate and sanitize the cart data
           const validatedItems = data.map((item: CartItem) => ({
             ...item,
-            price: Number(item.price) || 0, // Convert price to number or default to 0
-            quantity: Math.max(1, Math.round(Number(item.quantity)) || 1), // Ensure quantity is a positive integer
+            price: Number(item.price) || 0,
+            quantity: Math.max(1, Math.round(Number(item.quantity)) || 1),
           }));
           setCartItems(validatedItems);
         } else {
@@ -45,7 +52,7 @@ export default function CartPage() {
   }, []);
 
   const updateQuantity = async (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // Prevent negative quantities
+    if (newQuantity < 1) return;
 
     try {
       const response = await fetch("/api/cart", {
@@ -83,7 +90,7 @@ export default function CartPage() {
 
       if (response.ok) {
         setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-        setError(null); // Clear any existing errors
+        setError(null);
       } else {
         throw new Error("Failed to remove item");
       }
@@ -102,6 +109,40 @@ export default function CartPage() {
     (sum, item) => sum + calculateItemTotal(item.price, item.quantity),
     0
   );
+
+  // ... (previous imports and code remain the same)
+
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsCheckingOut(true); // Set isCheckingOut to true
+
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone, address }),
+      });
+
+      if (response.ok) {
+        const { whatsappUrl, orderId } = await response.json();
+        window.open(whatsappUrl, "_blank", "noreferrer,noopener"); // Open WhatsApp URL in a new tab
+        router.push(`/order-confirmation/${orderId}`); // Navigate to order confirmation page
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Checkout failed");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setError(`Failed to process checkout: ${error.message}`);
+    } finally {
+      setIsCheckingOut(false); // Set isCheckingOut back to false
+    }
+  };
+
+  // ... (rest of the component remains the same)
 
   if (isLoading) {
     return <div className="container mx-auto p-4">Loading cart...</div>;
@@ -170,10 +211,49 @@ export default function CartPage() {
             ))}
           </div>
           <div className="mt-6">
-            <p className="text-xl font-bold">Total: ${totalPrice.toFixed(2)}</p>
-            <Button asChild className="mt-4">
-              <Link href="/checkout">Proceed to Checkout</Link>
-            </Button>
+            <p className="text-xl font-bold mb-4">
+              Total: ${totalPrice.toFixed(2)}
+            </p>
+            <form onSubmit={handleCheckout} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isCheckingOut} // Disable the button when isCheckingOut is true
+              >
+                {isCheckingOut ? (
+                  <Loader className="mr-2" /> // Show the loader when isCheckingOut is true
+                ) : (
+                  "Proceed to Checkout"
+                )}
+              </Button>
+            </form>
           </div>
         </>
       )}
