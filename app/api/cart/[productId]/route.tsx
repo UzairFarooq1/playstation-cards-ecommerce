@@ -1,18 +1,16 @@
+// app/api/cart/[productId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Make sure your file is named [productId]/route.ts and is in the correct directory
 export async function POST(
   request: NextRequest,
   { params }: { params: { productId: string } }
 ) {
   try {
-    // Log the incoming request parameters
     console.log("Incoming request params:", params);
 
-    // Early validation of productId from params
     if (!params || !params.productId) {
       console.error("ProductId missing from params:", params);
       return NextResponse.json(
@@ -24,7 +22,6 @@ export async function POST(
     const { productId } = params;
     console.log("Extracted productId:", productId);
 
-    // Get and validate session
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -33,7 +30,6 @@ export async function POST(
       );
     }
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -45,7 +41,6 @@ export async function POST(
       );
     }
 
-    // Verify product exists
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -58,7 +53,6 @@ export async function POST(
       );
     }
 
-    // Handle cart item creation/update
     const cartItem = await prisma.$transaction(async (tx) => {
       const existing = await tx.cartItem.findUnique({
         where: {

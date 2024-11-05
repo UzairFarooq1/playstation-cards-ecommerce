@@ -6,11 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { loadStripe } from "@stripe/stripe-js";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
 
 interface CartItem {
   id: string;
@@ -22,6 +17,7 @@ interface CartItem {
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,34 +58,65 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error("Stripe failed to initialize");
-
-      const response = await fetch("/api/create-checkout-session", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          cartItems,
+          cartItems: cartItems.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
           customerInfo: formData,
         }),
       });
 
-      const { sessionId } = await response.json();
-      const result = await stripe.redirectToCheckout({ sessionId });
+      console.log("Response status:", response.status);
+      console.log("Response status text:", response.statusText);
 
-      if (result.error) {
-        throw new Error(result.error.message);
+      const responseText = await response.text();
+      console.log("Response text:", responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error("Error parsing JSON:", jsonError);
+        throw new Error("Invalid response from server");
       }
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            `Checkout failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const { orderId, whatsappLink } = result;
+      toast({
+        title: "Success",
+        description: "Order placed successfully!",
+      });
+
+      // Open WhatsApp link in a new tab
+      window.open(whatsappLink, "_blank");
+
+      router.push(`/order-confirmation/${orderId}`);
     } catch (error) {
       console.error("Error during checkout:", error);
       toast({
         title: "Error",
-        description: "Checkout failed. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Checkout failed. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -159,8 +186,8 @@ export default function CheckoutPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Proceed to Payment
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Processing..." : "Place Order"}
             </Button>
           </form>
         </div>

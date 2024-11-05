@@ -18,7 +18,6 @@ export default function AddToCartButton({
   const router = useRouter();
 
   const addToCart = async () => {
-    // Validate productId before making the request
     if (
       !productId ||
       typeof productId !== "string" ||
