@@ -3,10 +3,11 @@ import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 
-export async function POST(
-  request: NextRequest,
-  context: { params: { productId: string } }
-) {
+interface RouteContext {
+  params: { productId: string };
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -25,7 +26,6 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Check if the product exists in the database
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -34,7 +34,6 @@ export async function POST(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Check if cart item already exists
     const existingCartItem = await prisma.cartItem.findUnique({
       where: {
         userId_productId: {
@@ -46,29 +45,19 @@ export async function POST(
 
     let cartItem;
     if (existingCartItem) {
-      // Update quantity of existing cart item
       cartItem = await prisma.cartItem.update({
-        where: {
-          id: existingCartItem.id,
-        },
-        data: {
-          quantity: existingCartItem.quantity + 1,
-        },
-        include: {
-          product: true,
-        },
+        where: { id: existingCartItem.id },
+        data: { quantity: existingCartItem.quantity + 1 },
+        include: { product: true },
       });
     } else {
-      // Create a new cart item
       cartItem = await prisma.cartItem.create({
         data: {
           userId: user.id,
           productId: productId,
           quantity: 1,
         },
-        include: {
-          product: true,
-        },
+        include: { product: true },
       });
     }
 
@@ -89,13 +78,8 @@ export async function POST(
     });
   } catch (error) {
     console.error("Server error while adding to cart:", error);
-
-    // Return a JSON error response for client parsing
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to add item to cart",
-      },
+      { success: false, error: "Failed to add item to cart" },
       { status: 500 }
     );
   }
