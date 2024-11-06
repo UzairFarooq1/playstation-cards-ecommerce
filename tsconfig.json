@@ -29,6 +29,6 @@
   ".next/types/**/*.ts",
   "next-auth.d.ts",
   "app/api/cart/[productId]/route.ts"
-],
+, "app/api/cart/[productId]/route.tsx"],
   "exclude": ["node_modules"]
 }
