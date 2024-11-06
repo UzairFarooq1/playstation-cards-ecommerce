@@ -5,20 +5,20 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { productId: string } }
+  { params }: { params: { productId: string } }
 ) {
   try {
-    console.log("Incoming request params:", context.params);
+    console.log("Incoming request params:", params);
 
-    if (!context.params || !context.params.productId) {
-      console.error("ProductId missing from params:", context.params);
+    if (!params || !params.productId) {
+      console.error("ProductId missing from params:", params);
       return NextResponse.json(
         { success: false, error: "Missing product ID" },
         { status: 400 }
       );
     }
 
-    const { productId } = context.params;
+    const { productId } = params;
     console.log("Extracted productId:", productId);
 
     const session = await getServerSession(authOptions);
