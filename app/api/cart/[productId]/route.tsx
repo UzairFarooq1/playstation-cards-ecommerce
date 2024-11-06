@@ -5,23 +5,20 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } } // Simplified `context` type
+  { params }: { params: Record<string, string> }
 ) {
+  const { productId } = params;
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      console.error("Unauthorized request: No session or email found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { productId } = params;
-    console.log("Processing request for product:", productId);
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
     if (!user) {
-      console.error("User not found for email:", session.user.email);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -29,7 +26,6 @@ export async function POST(
       where: { id: productId },
     });
     if (!product) {
-      console.error("Product not found for ID:", productId);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
@@ -37,7 +33,7 @@ export async function POST(
       where: {
         userId_productId: {
           userId: user.id,
-          productId: productId,
+          productId,
         },
       },
     });
@@ -53,14 +49,12 @@ export async function POST(
       cartItem = await prisma.cartItem.create({
         data: {
           userId: user.id,
-          productId: productId,
+          productId,
           quantity: 1,
         },
         include: { product: true },
       });
     }
-
-    console.log("Cart item created/updated successfully:", cartItem);
 
     return NextResponse.json({
       success: true,
@@ -76,7 +70,6 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Server error while adding to cart:", error);
     return NextResponse.json(
       { success: false, error: "Failed to add item to cart" },
       { status: 500 }
