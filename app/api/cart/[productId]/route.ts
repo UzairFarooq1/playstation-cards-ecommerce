@@ -8,75 +8,71 @@ export async function POST(
   context: { params: { productId: string } }
 ) {
   try {
-    const { productId } = context.params;
-    console.log("Extracted productId:", productId);
-
-    if (!productId) {
-      console.error("ProductId missing from params:", context.params);
-      return NextResponse.json(
-        { success: false, error: "Missing product ID" },
-        { status: 400 }
-      );
-    }
-
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 }
-      );
+      console.error("Unauthorized request: No session or email found");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { productId } = context.params;
+    console.log("Processing request for product:", productId);
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      console.error("User not found for email:", session.user.email);
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if the product exists in the database
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
-
     if (!product) {
-      console.error("Product not found:", productId);
-      return NextResponse.json(
-        { success: false, error: "Product not found" },
-        { status: 404 }
-      );
+      console.error("Product not found for ID:", productId);
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const cartItem = await prisma.$transaction(async (tx) => {
-      const existing = await tx.cartItem.findUnique({
+    // Check if cart item already exists
+    const existingCartItem = await prisma.cartItem.findUnique({
+      where: {
+        userId_productId: {
+          userId: user.id,
+          productId: productId,
+        },
+      },
+    });
+
+    let cartItem;
+    if (existingCartItem) {
+      // Update quantity of existing cart item
+      cartItem = await prisma.cartItem.update({
         where: {
-          userId_productId: {
-            userId: user.id,
-            productId: productId,
-          },
+          id: existingCartItem.id,
+        },
+        data: {
+          quantity: existingCartItem.quantity + 1,
+        },
+        include: {
+          product: true,
         },
       });
-
-      if (existing) {
-        return await tx.cartItem.update({
-          where: { id: existing.id },
-          data: { quantity: existing.quantity + 1 },
-          include: { product: true },
-        });
-      }
-
-      return await tx.cartItem.create({
+    } else {
+      // Create a new cart item
+      cartItem = await prisma.cartItem.create({
         data: {
           userId: user.id,
           productId: productId,
           quantity: 1,
         },
-        include: { product: true },
+        include: {
+          product: true,
+        },
       });
-    });
+    }
+
+    console.log("Cart item created/updated successfully:", cartItem);
 
     return NextResponse.json({
       success: true,
@@ -92,12 +88,13 @@ export async function POST(
       },
     });
   } catch (error) {
-    console.error("Cart operation error:", error);
+    console.error("Server error while adding to cart:", error);
+
+    // Return a JSON error response for client parsing
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Failed to add item to cart",
+        error: "Failed to add item to cart",
       },
       { status: 500 }
     );
