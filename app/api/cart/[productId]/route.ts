@@ -5,7 +5,7 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { productId: string } }
+  { params }: { params: { productId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { productId } = context.params;
+    const { productId } = params;
     console.log("Processing request for product:", productId);
 
     const user = await prisma.user.findUnique({
