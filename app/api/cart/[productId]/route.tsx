@@ -1,4 +1,3 @@
-// app/api/cart/[productId]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
@@ -6,20 +5,20 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  context: { params: { productId: string } }
 ) {
   try {
-    console.log("Incoming request params:", params);
+    console.log("Incoming request params:", context.params);
 
-    if (!params || !params.productId) {
-      console.error("ProductId missing from params:", params);
+    if (!context.params || !context.params.productId) {
+      console.error("ProductId missing from params:", context.params);
       return NextResponse.json(
         { success: false, error: "Missing product ID" },
         { status: 400 }
       );
     }
 
-    const { productId } = params;
+    const { productId } = context.params;
     console.log("Extracted productId:", productId);
 
     const session = await getServerSession(authOptions);

@@ -2,8 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/[...nextauth]/route";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -14,6 +12,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Input } from "@/components/ui/input";
+import { authOptions } from "./lib/auth";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
