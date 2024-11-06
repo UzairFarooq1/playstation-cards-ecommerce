@@ -3,11 +3,10 @@ import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 
-interface RouteContext {
-  params: { productId: string };
-}
-
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { productId: string } } // Simplified `context` type
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -15,7 +14,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { productId } = context.params;
+    const { productId } = params;
     console.log("Processing request for product:", productId);
 
     const user = await prisma.user.findUnique({
