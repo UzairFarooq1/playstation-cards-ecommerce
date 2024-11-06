@@ -5,7 +5,7 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: { productId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,8 +14,8 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = context.params;
-    console.log("Processing request for product:", id);
+    const { productId } = context.params;
+    console.log("Processing request for product:", productId);
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -27,10 +27,10 @@ export async function POST(
 
     // Check if the product exists in the database
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: productId },
     });
     if (!product) {
-      console.error("Product not found for ID:", id);
+      console.error("Product not found for ID:", productId);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
@@ -39,7 +39,7 @@ export async function POST(
       where: {
         userId_productId: {
           userId: user.id,
-          productId: id,
+          productId: productId,
         },
       },
     });
@@ -63,7 +63,7 @@ export async function POST(
       cartItem = await prisma.cartItem.create({
         data: {
           userId: user.id,
-          productId: id,
+          productId: productId,
           quantity: 1,
         },
         include: {
