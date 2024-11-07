@@ -59,6 +59,18 @@ export async function POST(request: NextRequest) {
     await prisma.cartItem.deleteMany({
       where: { userId: user.id },
     });
+    interface OrderItem {
+      product: {
+        name: string;
+      };
+      quantity: number;
+      price: number;
+    }
+
+    interface Order {
+      items: OrderItem[];
+      total: number;
+    }
 
     // Generate WhatsApp message
     const message = generateWhatsAppMessage(order, name, phone, address);
