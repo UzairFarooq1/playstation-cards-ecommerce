@@ -26,9 +26,19 @@ import { Plus, Search, Edit, Trash2, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+type SortKey = keyof Product; // 'name' | 'price'
+
 export default function AdminDashboard() {
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -38,11 +48,14 @@ export default function AdminDashboard() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [priceFilter, setPriceFilter] = useState("all");
-  const [sortConfig, setSortConfig] = useState({
+  const [sortConfig, setSortConfig] = useState<{
+    key: SortKey;
+    direction: "asc" | "desc";
+  }>({
     key: "name",
     direction: "asc",
   });
-  const [deleteProductId, setDeleteProductId] = useState(null);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -62,7 +75,7 @@ export default function AdminDashboard() {
     try {
       const res = await fetch("/api/products");
       if (!res.ok) throw new Error("Failed to fetch products");
-      const data = await res.json();
+      const data: Product[] = await res.json();
       setProducts(data);
     } catch (error) {
       toast({
@@ -133,13 +146,12 @@ export default function AdminDashboard() {
     setFilteredProducts(filtered);
   };
 
-  const handleSort = (key) => {
+  const handleSort = (key: SortKey) => {
     setSortConfig((prev) => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
   };
-
   const handleDelete = async () => {
     if (!deleteProductId) return;
 
@@ -160,19 +172,28 @@ export default function AdminDashboard() {
         title: "Success",
         description: "Product deleted successfully!",
       });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error.message || "Failed to delete product. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: unknown) {
+      // Narrow the type to an Error
+      if (error instanceof Error) {
+        toast({
+          title: "Error",
+          description:
+            error.message || "Failed to delete product. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "An unknown error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setDeleteProductId(null);
     }
   };
 
-  const handleEdit = (productId) => {
+  const handleEdit = (productId: string) => {
     router.push(`/admin/edit-product/${productId}`);
   };
 
