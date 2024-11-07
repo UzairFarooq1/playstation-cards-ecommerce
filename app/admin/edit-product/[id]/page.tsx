@@ -10,9 +10,12 @@ import prisma from "@/app/lib/prisma";
 interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  imageUrl: string;
+  imageUrl: string | null;
+  category: string | null;
+  stockQuantity: number;
+  sku: string;
 }
 
 type Params = Promise<{ id: string }>;
