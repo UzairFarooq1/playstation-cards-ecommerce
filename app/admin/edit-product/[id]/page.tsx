@@ -7,10 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import prisma from "@/app/lib/prisma";
 
-interface PageParams {
-  id: string;
-}
-
 interface Product {
   id: string;
   name: string;
@@ -19,7 +15,11 @@ interface Product {
   imageUrl: string;
 }
 
-export default function EditProductPage({ params }: { params: PageParams }) {
+export default function EditProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { id } = params;
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
