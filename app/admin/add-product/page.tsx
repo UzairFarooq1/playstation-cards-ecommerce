@@ -56,10 +56,10 @@ export default function AddProduct() {
     const errors = [];
     if (!newProduct.name.trim()) errors.push("Product name is required");
     if (!newProduct.description.trim()) errors.push("Description is required");
-    if (!newProduct.price || newProduct.price <= 0)
+    if (!newProduct.price || parseFloat(newProduct.price) <= 0)
       errors.push("Valid price is required");
     if (!newProduct.imageUrl.trim()) errors.push("Image URL is required");
-    if (!newProduct.stockQuantity || newProduct.stockQuantity < 0)
+    if (!newProduct.stockQuantity || parseFloat(newProduct.stockQuantity) < 0)
       errors.push("Valid stock quantity is required");
     if (!newProduct.sku.trim()) errors.push("SKU is required");
 
