@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +42,9 @@ export default function EditProduct() {
     fetchProduct();
   }, [params.id, router, toast]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setProduct((prev) => ({
       ...prev,
