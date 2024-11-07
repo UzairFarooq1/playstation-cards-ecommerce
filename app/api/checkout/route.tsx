@@ -3,19 +3,21 @@ import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 
-export async function POST(request: NextRequest) {
-  interface OrderItem {
-    product: {
-      name: string;
-    };
-    quantity: number;
-    price: number;
-  }
+// Define types for the order and its items
+interface OrderItem {
+  product: {
+    name: string;
+  };
+  quantity: number;
+  price: number;
+}
 
-  interface Order {
-    items: OrderItem[];
-    total: number;
-  }
+interface Order {
+  items: OrderItem[];
+  total: number;
+}
+
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -93,7 +95,7 @@ export async function POST(request: NextRequest) {
 }
 
 function generateWhatsAppMessage(
-  order,
+  order: Order, // Explicitly set the type for 'order'
   name: string,
   phone: string,
   address: string
