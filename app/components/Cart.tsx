@@ -1,8 +1,8 @@
 // app/components/Cart.tsx
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import prisma from "@/app/lib/prisma";
 import CartItem from "./CartItem";
+import { authOptions } from "../lib/auth";
 
 export default async function Cart() {
   const session = await getServerSession(authOptions);
