@@ -45,7 +45,7 @@ export default async function Cart() {
                 name={item.product.name}
                 price={item.product.price}
                 quantity={item.quantity}
-                imageUrl={item.product.imageUrl}
+                imageUrl={item.product.imageUrl || "/BLANK.jpg"}
               />
             ))}
           </div>
