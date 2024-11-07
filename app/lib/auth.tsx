@@ -27,18 +27,27 @@ export const authOptions: NextAuthOptions = {
         if (!user) {
           return null;
         }
+
+        // Type assertion
+        const userWithRole = user as {
+          id: string;
+          email: string;
+          name: string;
+          role: string;
+        };
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
-          user.password
+          userWithRole.password
         );
         if (!isPasswordValid) {
           return null;
         }
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
+          id: userWithRole.id,
+          email: userWithRole.email,
+          name: userWithRole.name,
+          role: userWithRole.role,
         };
       },
     }),
