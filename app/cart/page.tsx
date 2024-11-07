@@ -134,9 +134,15 @@ export default function CartPage() {
         const errorData = await response.json();
         throw new Error(errorData.error || "Checkout failed");
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // Explicitly type 'error' as 'unknown'
       console.error("Checkout error:", error);
-      setError(`Failed to process checkout: ${error.message}`);
+      if (error instanceof Error) {
+        // Type guard to ensure 'error' is an instance of 'Error'
+        setError(`Failed to process checkout: ${error.message}`);
+      } else {
+        setError("Failed to process checkout: Unknown error");
+      }
     } finally {
       setIsCheckingOut(false); // Set isCheckingOut back to false
     }
