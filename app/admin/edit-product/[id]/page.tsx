@@ -1,4 +1,5 @@
 // ./app/admin/edit-product/[id]/page.tsx
+"use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
