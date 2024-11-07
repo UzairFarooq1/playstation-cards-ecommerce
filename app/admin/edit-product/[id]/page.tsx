@@ -1,4 +1,3 @@
-"use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,7 @@ interface Product {
   imageUrl: string;
 }
 
-export default function EditProductPage({
+export default async function EditProductPage({
   params,
 }: {
   params: { id: string };
