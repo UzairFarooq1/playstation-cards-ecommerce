@@ -5,7 +5,7 @@ import { authOptions } from "@/app/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  context: { params: Record<string, string | string[]> }
+  context: { params: Promise<Record<string, string | string[]>> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const productId = context.params.productId as string;
+    const productId = (await context.params).productId as string;
     if (!productId) {
       return NextResponse.json(
         { error: "Product ID is required" },
