@@ -69,12 +69,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, whatsappUrl, orderId: order.id });
   } catch (error) {
     console.error("Checkout error:", error);
+  
     return NextResponse.json(
-      { error: "Failed to process checkout", details: error.message },
+      { 
+        error: "Failed to process checkout", 
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }
-}
+  
 
 function generateWhatsAppMessage(
   order,
