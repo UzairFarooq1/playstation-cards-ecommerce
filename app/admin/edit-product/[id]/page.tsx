@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +15,10 @@ interface Product {
   imageUrl: string;
 }
 
-export default async function EditProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+type Params = Promise<{ id: string }>;
+
+export default function EditProductPage({ params }: { params: Params }) {
+  const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
