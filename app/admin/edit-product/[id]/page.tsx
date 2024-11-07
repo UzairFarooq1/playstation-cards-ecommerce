@@ -1,5 +1,5 @@
 "use client";
-import { useState, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ interface Product {
 
 type Params = Promise<{ id: string }>;
 
-export default async function EditProductPage({ params }: { params: Params }) {
+export default function EditProductPage({ params }: { params: Params }) {
   const { id } = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
@@ -28,16 +28,21 @@ export default async function EditProductPage({ params }: { params: Params }) {
   const router = useRouter();
 
   // Fetch the product data
-  const fetchedProduct = await prisma.product.findUnique({
-    where: {
-      id,
-    },
-  });
-  setProduct(fetchedProduct);
-  setName(fetchedProduct?.name || "");
-  setDescription(fetchedProduct?.description || "");
-  setPrice(fetchedProduct?.price || 0);
-  setImageUrl(fetchedProduct?.imageUrl || "");
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const product = await prisma.product.findUnique({
+        where: {
+          id,
+        },
+      });
+      setProduct(product);
+      setName(product?.name || "");
+      setDescription(product?.description || "");
+      setPrice(product?.price || 0);
+      setImageUrl(product?.imageUrl || "");
+    };
+    fetchProduct();
+  }, [id]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,7 +68,6 @@ export default async function EditProductPage({ params }: { params: Params }) {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="container mx-auto p-4">
       <Card>
