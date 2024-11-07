@@ -1,200 +1,138 @@
-"use client";
-import { ChangeEvent, useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+// ./app/admin/edit-product/[id]/page.tsx
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import prisma from "@/app/lib/prisma";
 
-export default function EditProduct() {
-  const [product, setProduct] = useState({
-    name: "",
-    description: "",
-    price: "",
-    imageUrl: "",
-  });
+interface PageParams {
+  id: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+}
+
+interface PageProps {
+  params: PageParams;
+}
+
+export default async function EditProductPage({ params }: PageProps) {
+  const { id } = params;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState(0);
+  const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const router = useRouter();
-  const params = useParams();
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`/api/products/${params.id}`);
-        if (!res.ok) throw new Error("Failed to fetch product");
-        const data = await res.json();
-        setProduct(data);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch product details. Please try again.",
-          variant: "destructive",
-        });
-        router.push("/admin");
-      }
-    };
-
-    fetchProduct();
-  }, [params.id, router, toast]);
-
-  const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setProduct((prev) => ({
-      ...prev,
-      [name]: name === "price" ? parseFloat(value) || "" : value,
-    }));
+  // Fetch the product data
+  const fetchProduct = async () => {
+    const product = await prisma.product.findUnique({
+      where: {
+        id,
+      },
+    });
+    setProduct(product);
+    setName(product?.name || "");
+    setDescription(product?.description || "");
+    setPrice(product?.price || 0);
+    setImageUrl(product?.imageUrl || "");
   };
 
-  const handleSubmit = async (e) => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const res = await fetch(`/api/products/${params.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product),
+      await prisma.product.update({
+        where: {
+          id,
+        },
+        data: {
+          name,
+          description,
+          price,
+          imageUrl,
+        },
       });
-
-      if (!res.ok) throw new Error("Failed to update product");
-
-      toast({
-        title: "Success",
-        description: "Product updated successfully!",
-      });
-
-      router.push("/admin");
+      router.push("/admin/products");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update product. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error updating product:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <div className="mb-6">
-        <Link
-          href="/admin"
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Dashboard
-        </Link>
-      </div>
+  // Fetch the product data when the component mounts
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
 
+  return (
+    <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
           <CardTitle>Edit Product</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Product Name</Label>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="name" className="block font-medium mb-1">
+                Name
+              </label>
               <Input
                 id="name"
-                name="name"
-                value={product.name}
-                onChange={handleInputChange}
-                placeholder="Enter product name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
+            <div className="mb-4">
+              <label htmlFor="description" className="block font-medium mb-1">
+                Description
+              </label>
               <Textarea
                 id="description"
-                name="description"
-                value={product.description}
-                onChange={handleInputChange}
-                placeholder="Enter product description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={product.price}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="stockQuantity">Stock Quantity</Label>
-                <Input
-                  id="stockQuantity"
-                  name="stockQuantity"
-                  type="number"
-                  min="0"
-                  value={product.stockQuantity}
-                  onChange={handleInputChange}
-                  placeholder="0"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
+            <div className="mb-4">
+              <label htmlFor="price" className="block font-medium mb-1">
+                Price
+              </label>
               <Input
-                id="category"
-                name="category"
-                value={product.category}
-                onChange={handleInputChange}
-                placeholder="Enter product category"
+                id="price"
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(parseFloat(e.target.value))}
+                required
               />
             </div>
-            <div className="flex gap-4">
-              <div className="flex-grow">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  name="sku"
-                  value={product.sku}
-                  onChange={handleInputChange}
-                  placeholder="Enter SKU"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="imageUrl">Image URL</Label>
+            <div className="mb-4">
+              <label htmlFor="imageUrl" className="block font-medium mb-1">
+                Image URL
+              </label>
               <Input
                 id="imageUrl"
-                name="imageUrl"
-                value={product.imageUrl}
-                onChange={handleInputChange}
-                placeholder="Enter image URL"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
                 required
               />
             </div>
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Updating..." : "Update Product"}
-              </Button>
-              <Link href="/admin">
-                <Button variant="outline" type="button">
-                  Cancel
-                </Button>
-              </Link>
-            </div>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
           </form>
         </CardContent>
       </Card>
