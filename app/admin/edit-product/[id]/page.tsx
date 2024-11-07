@@ -1,6 +1,5 @@
-// ./app/admin/edit-product/[id]/page.tsx
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,11 +19,7 @@ interface Product {
   imageUrl: string;
 }
 
-interface PageProps {
-  params: PageParams;
-}
-
-export default async function EditProductPage({ params }: PageProps) {
+export default function EditProductPage({ params }: { params: PageParams }) {
   const { id } = params;
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
@@ -35,18 +30,21 @@ export default async function EditProductPage({ params }: PageProps) {
   const router = useRouter();
 
   // Fetch the product data
-  const fetchProduct = async () => {
-    const product = await prisma.product.findUnique({
-      where: {
-        id,
-      },
-    });
-    setProduct(product);
-    setName(product?.name || "");
-    setDescription(product?.description || "");
-    setPrice(product?.price || 0);
-    setImageUrl(product?.imageUrl || "");
-  };
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const product = await prisma.product.findUnique({
+        where: {
+          id,
+        },
+      });
+      setProduct(product);
+      setName(product?.name || "");
+      setDescription(product?.description || "");
+      setPrice(product?.price || 0);
+      setImageUrl(product?.imageUrl || "");
+    };
+    fetchProduct();
+  }, [id]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -72,12 +70,6 @@ export default async function EditProductPage({ params }: PageProps) {
       setIsLoading(false);
     }
   };
-
-  // Fetch the product data when the component mounts
-  useEffect(() => {
-    fetchProduct();
-  }, [id]);
-
   return (
     <div className="container mx-auto p-4">
       <Card>
