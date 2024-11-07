@@ -12,11 +12,13 @@ interface Product {
   imageUrl: string;
 }
 
-interface CategoryPageProps {
+// Update the props interface to match Next.js requirements for async components
+type Props = {
   params: {
     category: string;
   };
-}
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
 // Fetch products by category
 async function fetchProductsByCategory(category: string) {
@@ -30,7 +32,7 @@ async function fetchProductsByCategory(category: string) {
   });
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({ params, searchParams }: Props) {
   const { category } = params;
   const products = await fetchProductsByCategory(category);
 
