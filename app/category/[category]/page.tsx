@@ -12,15 +12,12 @@ interface Product {
   imageUrl: string;
 }
 
-// Using the correct Next.js page params type
-type PageParams = {
-  category: string;
-};
-
-type PageProps = {
-  params: PageParams;
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+// Define the page props type
+export interface PageProps {
+  params: {
+    category: string;
+  };
+}
 
 // Fetch products by category
 async function fetchProductsByCategory(category: string) {
@@ -34,12 +31,10 @@ async function fetchProductsByCategory(category: string) {
   });
 }
 
-// Remove the async keyword from the component definition
-export default function CategoryPage({ params, searchParams }: PageProps) {
+// Define the page component
+export default async function CategoryPage({ params }: PageProps) {
   const { category } = params;
-
-  // Move the async operation inside a useEffect or other async context
-  const products = use(fetchProductsByCategory(category));
+  const products = await fetchProductsByCategory(category);
 
   return (
     <div className="container mx-auto p-4 space-y-12">
