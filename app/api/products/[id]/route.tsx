@@ -1,101 +1,76 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/lib/auth";
 
-export async function POST(
+export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      console.error("Unauthorized request: No session or email found");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const productId = params.id;
 
-    const { id } = context.params;
-    console.log("Processing request for product:", id);
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    if (!user) {
-      console.error("User not found for email:", session.user.email);
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Check if the product exists in the database
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: productId },
     });
+
     if (!product) {
-      console.error("Product not found for ID:", id);
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Check if cart item already exists
-    const existingCartItem = await prisma.cartItem.findUnique({
-      where: {
-        userId_productId: {
-          userId: user.id,
-          productId: id,
-        },
-      },
-    });
-
-    let cartItem;
-    if (existingCartItem) {
-      // Update quantity of existing cart item
-      cartItem = await prisma.cartItem.update({
-        where: {
-          id: existingCartItem.id,
-        },
-        data: {
-          quantity: existingCartItem.quantity + 1,
-        },
-        include: {
-          product: true,
-        },
-      });
-    } else {
-      // Create a new cart item
-      cartItem = await prisma.cartItem.create({
-        data: {
-          userId: user.id,
-          productId: id,
-          quantity: 1,
-        },
-        include: {
-          product: true,
-        },
-      });
-    }
-
-    console.log("Cart item created/updated successfully:", cartItem);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: cartItem.id,
-        quantity: cartItem.quantity,
-        product: {
-          id: cartItem.product.id,
-          name: cartItem.product.name,
-          price: cartItem.product.price,
-          imageUrl: cartItem.product.imageUrl,
-        },
-      },
-    });
+    return NextResponse.json(product);
   } catch (error) {
-    console.error("Server error while adding to cart:", error);
-
-    // Return a JSON error response for client parsing
+    console.error("Error fetching product:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to add item to cart",
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const productId = params.id;
+    const data = await request.json();
+
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        imageUrl: data.imageUrl,
+        stockQuantity: data.stockQuantity,
       },
+    });
+
+    return NextResponse.json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const productId = params.id;
+
+    await prisma.product.delete({
+      where: { id: productId },
+    });
+
+    return NextResponse.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
