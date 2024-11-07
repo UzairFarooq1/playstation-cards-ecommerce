@@ -10,11 +10,12 @@ export async function generateStaticParams() {
   return products.map((product) => ({ id: product.id }));
 }
 
-export default async function ProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function ProductPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const product = await prisma.product.findUnique({
     where: { id: params.id },
   });

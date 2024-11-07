@@ -14,9 +14,9 @@ interface Product {
 
 // Define the page props type
 export interface PageProps {
-  params: {
+  params: Promise<{
     category: string;
-  };
+  }>;
 }
 
 // Fetch products by category
@@ -32,7 +32,8 @@ async function fetchProductsByCategory(category: string) {
 }
 
 // Define the page component
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage(props: PageProps) {
+  const params = await props.params;
   const { category } = params;
   const products = await fetchProductsByCategory(category);
 

@@ -3,11 +3,12 @@ import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default async function OrderConfirmationPage({
-  params,
-}: {
-  params: { orderId: string };
-}) {
+export default async function OrderConfirmationPage(
+  props: {
+    params: Promise<{ orderId: string }>;
+  }
+) {
+  const params = await props.params;
   const order = await prisma.order.findUnique({
     where: { id: params.orderId },
     include: {
