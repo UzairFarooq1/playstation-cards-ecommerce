@@ -12,11 +12,13 @@ interface Product {
   imageUrl: string;
 }
 
-// Update the props interface to match Next.js requirements for async components
-type Props = {
-  params: {
-    category: string;
-  };
+// Using the correct Next.js page params type
+type PageParams = {
+  category: string;
+};
+
+type PageProps = {
+  params: PageParams;
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
@@ -26,15 +28,18 @@ async function fetchProductsByCategory(category: string) {
     where: {
       category: {
         equals: category,
-        mode: "insensitive", // Enables case-insensitive matching
+        mode: "insensitive",
       },
     },
   });
 }
 
-export default async function CategoryPage({ params, searchParams }: Props) {
+// Remove the async keyword from the component definition
+export default function CategoryPage({ params, searchParams }: PageProps) {
   const { category } = params;
-  const products = await fetchProductsByCategory(category);
+
+  // Move the async operation inside a useEffect or other async context
+  const products = use(fetchProductsByCategory(category));
 
   return (
     <div className="container mx-auto p-4 space-y-12">
