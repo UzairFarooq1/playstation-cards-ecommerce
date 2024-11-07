@@ -30,7 +30,7 @@ export const authOptions: NextAuthOptions = {
             email: true,
             name: true,
             password: true, // Ensure password is included here
-            role: true,
+            role: true, // Ensure role is included here
           },
         });
 
@@ -52,17 +52,17 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role, // Return the role here
         };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // Add type assertions and ensure token is typed properly
+      // Ensure that user is typed correctly
       if (user) {
         token.id = user.id;
-        token.role = user.role as string; // Type assertion here for 'role'
+        token.role = user.role; // No need for type assertion here now
       }
 
       // Handle user updates (e.g., updating the name)
@@ -72,10 +72,9 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Add type assertion for session and token properties
       if (session.user) {
-        session.user.id = token.id as string; // Type assertion for 'id'
-        session.user.role = token.role as string; // Type assertion for 'role'
+        session.user.id = token.id;
+        session.user.role = token.role; // No type assertion needed here
       }
       return session;
     },
