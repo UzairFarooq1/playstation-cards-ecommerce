@@ -27,7 +27,9 @@ export default async function Home() {
     distinct: ["category"],
   });
 
-  const uniqueCategories = categories.map((c) => c.category).filter(Boolean);
+  const uniqueCategories = categories
+    .map((c) => c.category)
+    .filter((category): category is string => category !== null);
 
   return (
     <div className="container mx-auto p-4 space-y-12">
@@ -51,7 +53,7 @@ export default async function Home() {
           </Button>
         </div>
       </section>
-      {/* // Featured Products Carousel */}
+      {/* Featured Products Carousel */}
       <section id="featured-products" className="py-12">
         <h2 className="text-3xl font-bold mb-8 text-center">
           Featured Products
