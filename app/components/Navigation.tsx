@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShoppingCart, User, LogIn, LogOut, Menu, X } from "lucide-react";
@@ -72,7 +73,11 @@ export function Navigation() {
               className="text-gray-400 hover:text-gray-500 relative"
             >
               <ShoppingCart className="h-6 w-6" />
-              {/* Add a cart item count here if needed */}
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
             <div className="ml-3 relative">
               {session ? (
@@ -139,6 +144,12 @@ export function Navigation() {
                 className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
               >
                 Profile
+              </Link>
+              <Link
+                href="/cart"
+                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              >
+                Cart ({cartItemCount})
               </Link>
               <button
                 onClick={() => signOut()}
