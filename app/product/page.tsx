@@ -1,6 +1,7 @@
 import Link from "next/link";
 import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default async function Products() {
   const featuredProducts = await prisma.product.findMany({});
@@ -13,10 +14,12 @@ export default async function Products() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {featuredProducts.map((product) => (
             <div key={product.id} className="border p-4 rounded-lg">
-              <img
-                src={product.imageUrl}
+              <Image
+                src={product.imageUrl || "/placeholder.png"}
                 alt={product.name}
-                className="w-full h-48 object-cover mb-2 rounded"
+                fill
+                className="rounded-lg shadow-lg object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               <h3 className="text-lg font-semibold">{product.name}</h3>
               <p className="text-gray-600 mb-2">${product.price.toFixed(2)}</p>

@@ -1,14 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Product } from "@/app/types";
 
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl: string;
+type RelatedProductsProps = {
+  products: Product[];
 };
 
-export default function RelatedProducts({ products }: { products: Product[] }) {
+export default function RelatedProducts({ products }: RelatedProductsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {products.map((product) => (
@@ -20,7 +18,7 @@ export default function RelatedProducts({ products }: { products: Product[] }) {
           <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
             <div className="relative h-48">
               <Image
-                src={product.imageUrl}
+                src={product.imageUrl || "/placeholder.png"}
                 alt={product.name}
                 fill
                 className="object-cover"

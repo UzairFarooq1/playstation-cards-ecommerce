@@ -4,17 +4,16 @@ import Image from "next/image";
 import prisma from "@/app/lib/prisma";
 import RelatedProducts from "@/app/components/RelatedProducts";
 import AddToCartButton from "@/app/components/AddToCartButton";
+import { Product } from "@/app/types";
 
 export async function generateStaticParams() {
   const products = await prisma.product.findMany({ select: { id: true } });
   return products.map((product) => ({ id: product.id }));
 }
 
-export default async function ProductPage(
-  props: {
-    params: Promise<{ id: string }>;
-  }
-) {
+export default async function ProductPage(props: {
+  params: Promise<{ id: string }>;
+}) {
   const params = await props.params;
   const product = await prisma.product.findUnique({
     where: { id: params.id },
@@ -24,12 +23,12 @@ export default async function ProductPage(
     notFound();
   }
 
-  const relatedProducts = await prisma.product.findMany({
+  const relatedProducts = (await prisma.product.findMany({
     where: {
       id: { not: product.id },
     },
     take: 3,
-  });
+  })) as Product[];
 
   return (
     <div className="container mx-auto p-4">
@@ -42,7 +41,7 @@ export default async function ProductPage(
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="relative h-[450px]">
           <Image
-            src={product.imageUrl}
+            src={product.imageUrl || "/placeholder.png"}
             alt={product.name}
             fill
             className="rounded-lg shadow-lg object-cover"
@@ -63,7 +62,7 @@ export default async function ProductPage(
           </div>
           <div className="mb-4">
             <span className="font-semibold">Category: </span>
-            {product.category}
+            {product.category || "Uncategorized"}
           </div>
           <AddToCartButton productId={product.id} />
         </div>
