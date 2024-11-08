@@ -3,16 +3,9 @@ import Image from "next/image";
 import prisma from "@/app/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authOptions } from "./lib/auth";
+import { Input } from "@/components/ui/input";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -53,36 +46,47 @@ export default async function Home() {
           </Button>
         </div>
       </section>
-      {/* Featured Products Carousel */}
+
+      {/* Featured Products */}
       <section id="featured-products" className="py-12">
         <h2 className="text-3xl font-bold mb-8 text-center">
           Featured Products
         </h2>
-        <Carousel opts={{ loop: true }} className="w-full max-w-4xl mx-auto">
-          <CarouselContent>
-            {featuredProducts.map((product) => (
-              <CarouselItem key={product.id}>
-                <Card className="overflow-hidden">
-                  <Link href={`/product/${product.id}`} passHref>
-                    <Image
-                      src={
-                        product.imageUrl ||
-                        "/placeholder.svg?height=400&width=400"
-                      }
-                      alt={product.name}
-                      width={400}
-                      height={400}
-                      className="w-full h-[550px] object-cover cursor-pointer"
-                    />
-                  </Link>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {featuredProducts.map((product) => (
+            <Card
+              key={product.id}
+              className="hover:shadow-lg transition-shadow"
+            >
+              <Link href={`/product/${product.id}`} passHref>
+                <Image
+                  src={
+                    product.imageUrl || "/placeholder.svg?height=400&width=400"
+                  }
+                  alt={product.name}
+                  width={400}
+                  height={400}
+                  className="w-full h-[300px] object-cover cursor-pointer"
+                />
+              </Link>
+              <CardContent className="p-4">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">
+                    {product.name}
+                  </CardTitle>
+                </CardHeader>
+                <p className="text-gray-600 mb-4">
+                  ${product.price.toFixed(2)}
+                </p>
+                <Button asChild>
+                  <Link href={`/product/${product.id}`}>View Details</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </section>
+
       {/* Categories */}
       <section className="py-12 bg-gray-100 rounded-xl">
         <h2 className="text-3xl font-bold mb-8 text-center">Categories</h2>
@@ -100,6 +104,7 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
       {/* Why Choose Us */}
       <section className="py-12">
         <h2 className="text-3xl font-bold mb-8 text-center">Why Choose Us</h2>
@@ -134,8 +139,9 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
       {/* Newsletter Signup */}
-      <section className="bg-primary text-primary-foreground rounded-xl p-8">
+      {/* <section className="bg-primary text-primary-foreground rounded-xl p-8">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
           <p className="mb-6 text-lg">
@@ -153,7 +159,7 @@ export default async function Home() {
             </Button>
           </form>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
