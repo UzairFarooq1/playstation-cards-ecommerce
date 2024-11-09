@@ -60,9 +60,15 @@ export function Navigation() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   const handleNavigation = (href: string) => {
+    console.log(`Navigating to: ${href}`); // Debug log
     router.push(href);
     closeMobileMenu();
   };
+
+  useEffect(() => {
+    console.log("Session updated:", session); // Debug log
+    console.log("Is admin:", isAdmin); // Debug log
+  }, [session, isAdmin]);
 
   return (
     <nav className="bg-white shadow-md">
