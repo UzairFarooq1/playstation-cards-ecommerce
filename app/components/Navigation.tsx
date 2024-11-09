@@ -2,8 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ShoppingCart, User, LogIn, LogOut, Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  ShoppingCart,
+  User,
+  LogIn,
+  LogOut,
+  Menu,
+  X,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -12,9 +20,14 @@ export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const pathname = usePathname();
+  const router = useRouter();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
   useEffect(() => {
@@ -43,6 +56,13 @@ export function Navigation() {
       setCartItemCount(0);
     }
   }, [session]);
+
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  const handleNavigation = (href: string) => {
+    router.push(href);
+    closeMobileMenu();
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -98,6 +118,14 @@ export function Navigation() {
                   >
                     <User className="h-6 w-6" />
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="text-sm font-medium text-gray-500 hover:text-gray-700"
+                    >
+                      <Settings className="h-6 w-6" />
+                    </Link>
+                  )}
                   <button
                     onClick={() => signOut()}
                     className="text-sm font-medium text-gray-500 hover:text-gray-700"
@@ -134,55 +162,66 @@ export function Navigation() {
       {/* Mobile menu */}
       <div className={`sm:hidden ${mobileMenuOpen ? "block" : "hidden"}`}>
         <div className="pt-2 pb-3 space-y-1">
-          <Link
-            href="/"
+          <button
+            onClick={() => handleNavigation("/")}
             className={`${
               pathname === "/"
                 ? "bg-indigo-50 border-indigo-500 text-indigo-700"
                 : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
-            } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+            } block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left`}
           >
             Home
-          </Link>
-          <Link
-            href="/product"
+          </button>
+          <button
+            onClick={() => handleNavigation("/product")}
             className={`${
               pathname === "/product"
                 ? "bg-indigo-50 border-indigo-500 text-indigo-700"
                 : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700"
-            } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+            } block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left`}
           >
             Products
-          </Link>
+          </button>
 
           {session ? (
             <>
-              <Link
-                href="/profile"
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              <button
+                onClick={() => handleNavigation("/profile")}
+                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
               >
                 Profile
-              </Link>
-              <Link
-                href="/cart"
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              </button>
+              <button
+                onClick={() => handleNavigation("/cart")}
+                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
               >
                 Cart ({cartItemCount})
-              </Link>
+              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => handleNavigation("/admin")}
+                  className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
+                >
+                  Admin
+                </button>
+              )}
               <button
-                onClick={() => signOut()}
+                onClick={() => {
+                  signOut();
+                  closeMobileMenu();
+                }}
                 className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
               >
                 Log out
               </button>
             </>
           ) : (
-            <Link
-              href="/login"
-              className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            <button
+              onClick={() => handleNavigation("/login")}
+              className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
             >
               Log in
-            </Link>
+            </button>
           )}
         </div>
       </div>
