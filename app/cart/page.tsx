@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader } from "lucide-react";
+
 interface CartItem {
   id: string;
   name: string;
@@ -22,7 +23,7 @@ export default function CartPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [isCheckingOut, setIsCheckingOut] = useState(false); // New state for checking out
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -110,12 +111,10 @@ export default function CartPage() {
     0
   );
 
-  // ... (previous imports and code remain the same)
-
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setIsCheckingOut(true); // Set isCheckingOut to true
+    setIsCheckingOut(true);
 
     try {
       const response = await fetch("/api/checkout", {
@@ -128,27 +127,23 @@ export default function CartPage() {
 
       if (response.ok) {
         const { whatsappUrl, orderId } = await response.json();
-        window.open(whatsappUrl, "_blank", "noreferrer,noopener"); // Open WhatsApp URL in a new tab
-        router.push(`/order-confirmation/${orderId}`); // Navigate to order confirmation page
+        window.open(whatsappUrl, "_blank", "noreferrer,noopener");
+        router.push(`/order-confirmation/${orderId}`);
       } else {
         const errorData = await response.json();
         throw new Error(errorData.error || "Checkout failed");
       }
     } catch (error: unknown) {
-      // Explicitly type 'error' as 'unknown'
       console.error("Checkout error:", error);
       if (error instanceof Error) {
-        // Type guard to ensure 'error' is an instance of 'Error'
         setError(`Failed to process checkout: ${error.message}`);
       } else {
         setError("Failed to process checkout: Unknown error");
       }
     } finally {
-      setIsCheckingOut(false); // Set isCheckingOut back to false
+      setIsCheckingOut(false);
     }
   };
-
-  // ... (rest of the component remains the same)
 
   if (isLoading) {
     return <div className="container mx-auto p-4">Loading cart...</div>;
@@ -156,7 +151,7 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6">Your Cart</h1>
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -175,16 +170,18 @@ export default function CartPage() {
             {cartItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center space-x-4 border-b pb-4"
+                className="flex  items-center space-y-4 sm:space-y-0 sm:space-x-4 border-b pb-4"
               >
                 <img
                   src={item.imageUrl}
                   alt={item.name}
-                  className="w-20 h-20 object-cover rounded"
+                  className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded"
                 />
-                <div className="flex-grow">
-                  <h2 className="text-xl font-semibold">{item.name}</h2>
-                  <p className="text-gray-600">
+                <div className="flex-grow text-center sm:text-left">
+                  <h2 className="text-lg sm:text-xl font-semibold">
+                    {item.name}
+                  </h2>
+                  <p className="text-gray-600 text-sm sm:text-base">
                     ${Number(item.price).toFixed(2)}
                   </p>
                   <p className="text-sm text-gray-500">
@@ -192,32 +189,36 @@ export default function CartPage() {
                     {calculateItemTotal(item.price, item.quantity).toFixed(2)}
                   </p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() =>
-                      updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                    }
-                  >
-                    -
-                  </Button>
-                  <span>{item.quantity}</span>
-                  <Button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  >
-                    +
-                  </Button>
+                <div className="flex items-center gap-2 flex-col sm:flex-row space-x-2">
+                  <div className="flex items-center gap-2 pl-2">
+                    <Button
+                      onClick={() =>
+                        updateQuantity(item.id, Math.max(1, item.quantity - 1))
+                      }
+                    >
+                      -
+                    </Button>
+                    <span>{item.quantity}</span>
+                    <Button
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <div>
+                    <Button
+                      variant="destructive"
+                      onClick={() => removeItem(item.id)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  onClick={() => removeItem(item.id)}
-                >
-                  Remove
-                </Button>
               </div>
             ))}
           </div>
           <div className="mt-6">
-            <p className="text-xl font-bold mb-4">
+            <p className="text-lg sm:text-xl font-bold mb-4">
               Total: ${totalPrice.toFixed(2)}
             </p>
             <form onSubmit={handleCheckout} className="space-y-4">
@@ -248,13 +249,9 @@ export default function CartPage() {
                   required
                 />
               </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isCheckingOut} // Disable the button when isCheckingOut is true
-              >
+              <Button type="submit" className="w-full" disabled={isCheckingOut}>
                 {isCheckingOut ? (
-                  <Loader className="mr-2" /> // Show the loader when isCheckingOut is true
+                  <Loader className="mr-2" />
                 ) : (
                   "Proceed to Checkout"
                 )}
