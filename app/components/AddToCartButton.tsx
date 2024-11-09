@@ -46,6 +46,16 @@ export default function AddToCartButton({
       console.log("Server response:", result);
 
       if (!response.ok) {
+        // Check specifically for unauthorized error
+        if (
+          response.status === 401 ||
+          result.error?.toLowerCase().includes("unauthorized") ||
+          result.error?.toLowerCase().includes("unauthorised")
+        ) {
+          toast.error("Please log in to add items to cart");
+          router.push("/login");
+          return;
+        }
         throw new Error(result.error || "Failed to add to cart");
       }
 
@@ -57,9 +67,17 @@ export default function AddToCartButton({
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to add to cart"
-      );
+      // Don't show error toast if we're redirecting to login
+      if (
+        !(
+          error instanceof Error &&
+          error.message.toLowerCase().includes("unauthorized")
+        )
+      ) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to add to cart"
+        );
+      }
     } finally {
       setLoading(false);
     }

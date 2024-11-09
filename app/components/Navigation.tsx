@@ -60,15 +60,9 @@ export function Navigation() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   const handleNavigation = (href: string) => {
-    console.log(`Navigating to: ${href}`); // Debug log
     router.push(href);
     closeMobileMenu();
   };
-
-  useEffect(() => {
-    console.log("Session updated:", session); // Debug log
-    console.log("Is admin:", isAdmin); // Debug log
-  }, [session, isAdmin]);
 
   return (
     <nav className="bg-white shadow-md">
@@ -103,21 +97,23 @@ export function Navigation() {
               </Link>
             </div>
           </div>
+
+          {/* Desktop navigation icons */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <Link
-              href="/cart"
-              className="text-gray-400 hover:text-gray-500 relative"
-            >
-              <ShoppingCart className="h-6 w-6" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
             <div className="ml-3 relative">
               {session ? (
                 <div className="flex items-center space-x-4">
+                  <Link
+                    href="/cart"
+                    className="text-gray-400 hover:text-gray-500 relative"
+                  >
+                    <ShoppingCart className="h-6 w-6" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        {cartItemCount}
+                      </span>
+                    )}
+                  </Link>
                   <Link
                     href="/profile"
                     className="text-sm font-medium text-gray-500 hover:text-gray-700"
@@ -149,7 +145,34 @@ export function Navigation() {
               )}
             </div>
           </div>
-          <div className="flex items-center sm:hidden">
+
+          {/* Mobile header icons */}
+          <div className="flex items-center space-x-4 sm:hidden">
+            {session ? (
+              <>
+                <Link
+                  href="/cart"
+                  className="text-gray-400 hover:text-gray-500 relative"
+                >
+                  <ShoppingCart className="h-6 w-6" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  href="/profile"
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <User className="h-6 w-6" />
+                </Link>
+              </>
+            ) : (
+              <Link href="/login" className="text-gray-400 hover:text-gray-500">
+                <LogIn className="h-6 w-6" />
+              </Link>
+            )}
             <button
               onClick={toggleMobileMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -189,20 +212,8 @@ export function Navigation() {
             Products
           </button>
 
-          {session ? (
+          {session && (
             <>
-              <button
-                onClick={() => handleNavigation("/profile")}
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => handleNavigation("/cart")}
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
-              >
-                Cart ({cartItemCount})
-              </button>
               {isAdmin && (
                 <button
                   onClick={() => handleNavigation("/admin")}
@@ -221,13 +232,6 @@ export function Navigation() {
                 Log out
               </button>
             </>
-          ) : (
-            <button
-              onClick={() => handleNavigation("/login")}
-              className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
-            >
-              Log in
-            </button>
           )}
         </div>
       </div>

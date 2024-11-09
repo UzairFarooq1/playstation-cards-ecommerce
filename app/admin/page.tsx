@@ -6,16 +6,18 @@ import AdminDashboard from "../components/AdminDashboard";
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
 
-  // Log the session for debugging purposes
-  console.log("Session:", session);
+  console.log("AdminPage - Session:", JSON.stringify(session, null, 2));
 
   if (!session) {
-    // Redirect to login if no session is found
-    redirect("/");
+    console.log("AdminPage - No session, redirecting to login");
+    redirect("/login");
   } else if (session.user.role !== "ADMIN") {
-    // Optional: check if the user has admin privileges, if applicable
+    console.log(
+      `AdminPage - User role is ${session.user.role}, redirecting to unauthorized`
+    );
     redirect("/unauthorized");
   }
 
+  console.log("AdminPage - Rendering AdminDashboard");
   return <AdminDashboard />;
 }
