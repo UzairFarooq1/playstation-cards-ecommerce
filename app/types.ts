@@ -1,12 +1,27 @@
-export type Product = {
-    id: string;
-    name: string;
-    description: string | null;
-    price: number;
-    imageUrl: string | null;
-    category: string | null;
-    stockQuantity: number;
-    sku: string;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category?: string;
+  stockQuantity: number;
+  sku: string;
+}
+
+export interface Order {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface SalesData {
+  date: string;
+  sales: number;
+}
+
+export interface CategoryData {
+  name: string;
+  value: number;
+}

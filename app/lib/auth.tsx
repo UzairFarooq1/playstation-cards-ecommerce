@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth";
+import type { DefaultSession, NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
@@ -15,25 +15,35 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<User | null> {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("Missing email or password");
         }
+
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
+          where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            password: true,
           },
         });
+
         if (!user) {
-          return null;
+          throw new Error("User not found");
         }
+
         const isPasswordValid = await bcrypt.compare(
           credentials.password,
           user.password
         );
+
         if (!isPasswordValid) {
-          return null;
+          throw new Error("Invalid password");
         }
+
         return {
           id: user.id,
           email: user.email,
@@ -49,7 +59,6 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
       }
-      // Handle user updates
       if (trigger === "update" && session?.name) {
         token.name = session.name;
       }
@@ -69,4 +78,25 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
+
+// Extend next-auth types
+declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
+  interface Session {
+    user: {
+      id: string;
+      role?: string;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    role?: string;
+  }
+}

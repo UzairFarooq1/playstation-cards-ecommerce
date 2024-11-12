@@ -6,8 +6,10 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
   },
   images: {
-    domains: ["images.pexels.com"],
+    domains: ["images.pexels.com","products.eneba.games"],
+
   },
+
 };
 
 export default nextConfig;

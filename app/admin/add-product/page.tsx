@@ -163,7 +163,7 @@ export default function AddProduct() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">Price ($)</Label>
+                <Label htmlFor="price">Price (Ksh.)</Label>
                 <Input
                   id="price"
                   name="price"
