@@ -52,7 +52,7 @@ export default async function Cart() {
           <div className="mt-6 pt-4 border-t">
             <div className="flex justify-between items-center">
               <span className="font-medium">Total:</span>
-              <span className="text-xl font-bold">${total.toFixed(2)}</span>
+              <span className="text-xl font-bold">Ksh.{total.toFixed(2)}</span>
             </div>
           </div>
         </>

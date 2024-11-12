@@ -51,7 +51,9 @@ export default async function ProductPage(props: {
         <div>
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
           <p className="text-gray-600 mb-4">{product.description}</p>
-          <p className="text-2xl font-bold mb-4">${product.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold mb-4">
+            Ksh.{product.price.toFixed(2)}
+          </p>
           <div className="mb-4">
             <span className="font-semibold">Availability: </span>
             {product.stockQuantity > 0 ? (

@@ -66,7 +66,7 @@ export default async function Home() {
                   alt={product.name}
                   width={400}
                   height={400}
-                  className="w-full h-[300px] object-cover cursor-pointer"
+                  className="w-full h-[300px] object-contain cursor-pointer"
                 />
               </Link>
               <CardContent className="p-4">
@@ -76,7 +76,7 @@ export default async function Home() {
                   </CardTitle>
                 </CardHeader>
                 <p className="text-gray-600 mb-4">
-                  ${product.price.toFixed(2)}
+                  Ksh.{product.price.toFixed(2)}
                 </p>
                 <Button asChild>
                   <Link href={`/product/${product.id}`}>View Details</Link>

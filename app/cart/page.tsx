@@ -182,10 +182,10 @@ export default function CartPage() {
                     {item.name}
                   </h2>
                   <p className="text-gray-600 text-sm sm:text-base">
-                    ${Number(item.price).toFixed(2)}
+                    Ksh.{Number(item.price).toFixed(2)}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Subtotal: $
+                    Subtotal: Ksh.
                     {calculateItemTotal(item.price, item.quantity).toFixed(2)}
                   </p>
                 </div>
@@ -219,7 +219,7 @@ export default function CartPage() {
           </div>
           <div className="mt-6">
             <p className="text-lg sm:text-xl font-bold mb-4">
-              Total: ${totalPrice.toFixed(2)}
+              Total: Ksh.{totalPrice.toFixed(2)}
             </p>
             <form onSubmit={handleCheckout} className="space-y-4">
               <div>

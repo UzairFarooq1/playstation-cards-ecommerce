@@ -60,7 +60,7 @@ export default async function CategoryPage(props: PageProps) {
               </Link>
               <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
               <p className="text-2xl font-bold text-primary mb-4">
-                ${product.price.toFixed(2)}
+                Ksh.{product.price.toFixed(2)}
               </p>
               <Button asChild>
                 <Link href={`/product/${product.id}`}>View Details</Link>

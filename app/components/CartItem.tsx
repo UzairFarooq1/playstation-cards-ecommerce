@@ -67,7 +67,7 @@ export default function CartItem({
       <div className="flex-1">
         <h3 className="font-medium">{name}</h3>
         <p className="text-gray-600">
-          ${price.toFixed(2)} x {quantity}
+          Ksh.{price.toFixed(2)} x {quantity}
         </p>
       </div>
       <button

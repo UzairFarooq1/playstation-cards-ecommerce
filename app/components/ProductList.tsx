@@ -209,14 +209,14 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-48 object-cover mb-4 rounded"
+                className="w-full h-48 object-contain mb-4 rounded"
               />
               <h3 className="text-xl font-bold mb-2">{product.name}</h3>
               <p className="text-gray-600 mb-2 line-clamp-2">
                 {product.description}
               </p>
               <p className="text-lg font-semibold mb-4">
-                ${product.price.toFixed(2)}
+                Ksh.{product.price.toFixed(2)}
               </p>
               <div className="flex justify-end gap-2">
                 <Button

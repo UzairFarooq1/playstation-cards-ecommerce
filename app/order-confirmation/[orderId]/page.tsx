@@ -3,11 +3,9 @@ import prisma from "@/app/lib/prisma";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default async function OrderConfirmationPage(
-  props: {
-    params: Promise<{ orderId: string }>;
-  }
-) {
+export default async function OrderConfirmationPage(props: {
+  params: Promise<{ orderId: string }>;
+}) {
   const params = await props.params;
   const order = await prisma.order.findUnique({
     where: { id: params.orderId },
@@ -34,7 +32,7 @@ export default async function OrderConfirmationPage(
       <div className="mb-6">
         <h2 className="text-2xl font-semibold mb-2">Order Details</h2>
         <p>Order ID: {order.id}</p>
-        <p>Total: ${order.total.toFixed(2)}</p>
+        <p>Total: Ksh.{order.total.toFixed(2)}</p>
         <p>Status: {order.status}</p>
       </div>
       <div className="mb-6">
@@ -42,7 +40,7 @@ export default async function OrderConfirmationPage(
         <ul>
           {order.items.map((item) => (
             <li key={item.id} className="mb-2">
-              {item.product.name} x {item.quantity} - $
+              {item.product.name} x {item.quantity} - Ksh.
               {(item.price * item.quantity).toFixed(2)}
             </li>
           ))}
