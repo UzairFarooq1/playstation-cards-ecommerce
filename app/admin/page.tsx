@@ -8,16 +8,21 @@ export default async function AdminPage() {
 
   console.log("AdminPage - Session:", JSON.stringify(session, null, 2));
 
-  if (!session) {
+  if (!session || !session.user) {
     console.log("AdminPage - No session, redirecting to login");
     redirect("/login");
-  } else if (session.user.email !== "uzairf2580@gmail.com") {
+  }
+
+  if (
+    session.user.email !== "uzairf2580@gmail.com" ||
+    session.user.role !== "ADMIN"
+  ) {
     console.log(
-      `AdminPage - User role is ${session.user.role}, redirecting to unauthorized`
+      `AdminPage - Access denied. User email: ${session.user.email}, role: ${session.user.role}`
     );
     redirect("/unauthorized");
   }
 
-  console.log("AdminPage - Rendering AdminDashboard");
+  console.log("AdminPage - Access granted, rendering AdminDashboard");
   return <AdminDashboard />;
 }

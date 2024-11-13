@@ -10,6 +10,7 @@ import { ChartsSection } from "./ChartsSection";
 import { ProductList } from "./ProductList";
 import { Product, Order, SalesData, CategoryData } from "@/app/types";
 import { RecentOrders } from "./RecentOrders";
+import { useSession } from "next-auth/react";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,6 +18,7 @@ export default function AdminDashboard() {
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const { toast } = useToast();
+  const { data: session } = useSession();
 
   useEffect(() => {
     fetchProducts();
@@ -85,16 +87,34 @@ export default function AdminDashboard() {
     }
   };
 
+  if (
+    !session ||
+    !session.user ||
+    session.user.email !== "uzairf2580@gmail.com" ||
+    session.user.role !== "ADMIN"
+  ) {
+    console.log(
+      "AdminDashboard - Access denied. Session:",
+      JSON.stringify(session, null, 2)
+    );
+    return <div>Access Denied</div>;
+  }
+
+  console.log("AdminDashboard - Access granted. User:", session.user);
+
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <Link href="/admin/add-product">
-          <Button className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add New Product
-          </Button>
-        </Link>
+        <div className="flex items-center gap-4">
+          <p>Welcome, {session.user.name || session.user.email}</p>
+          <Link href="/admin/add-product">
+            <Button className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Add New Product
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <StatisticsOverview products={products} recentOrders={recentOrders} />
