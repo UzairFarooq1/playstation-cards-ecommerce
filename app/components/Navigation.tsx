@@ -120,14 +120,14 @@ export function Navigation() {
                   >
                     <User className="h-6 w-6" />
                   </Link>
-                  {isAdmin && (
+                  {/* {isAdmin && (
                     <Link
                       href="/admin"
                       className="text-sm font-medium text-gray-500 hover:text-gray-700"
                     >
                       <Settings className="h-6 w-6" />
                     </Link>
-                  )}
+                  )} */}
                   <button
                     onClick={() => signOut()}
                     className="text-sm font-medium text-gray-500 hover:text-gray-700"
@@ -214,14 +214,14 @@ export function Navigation() {
 
           {session && (
             <>
-              {isAdmin && (
+              {/* {isAdmin && (
                 <button
                   onClick={() => handleNavigation("/admin")}
                   className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium w-full text-left"
                 >
                   Admin
                 </button>
-              )}
+              )} */}
               <button
                 onClick={() => {
                   signOut();
