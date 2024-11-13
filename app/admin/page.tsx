@@ -1,27 +1,31 @@
-import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { authOptions } from "../lib/auth";
+import { PrismaClient } from "@prisma/client";
 import AdminDashboard from "../components/AdminDashboard";
-import { checkUserRole } from "../lib/auth-utils";
+
+const prisma = new PrismaClient();
 
 export default async function AdminPage() {
-  const session = await getServerSession(authOptions);
-
-  console.log("AdminPage - Session:", JSON.stringify(session, null, 2));
-
-  if (!session || !session.user) {
-    console.log("AdminPage - No session, redirecting to login");
-    redirect("/login");
-  }
+  // Fetch the currently logged-in user from the database
+  const currentUser = await prisma.user.findUnique({
+    where: {
+      email: "uzairf2580@gmail.com",
+    },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+    },
+  });
 
   console.log(
-    "AdminPage - Session user:",
-    JSON.stringify(session.user, null, 2)
+    "AdminPage - Current user:",
+    JSON.stringify(currentUser, null, 2)
   );
 
-  if (!(await checkUserRole(session.user, ["ADMIN"]))) {
+  // Check if the user has the "ADMIN" role
+  if (!currentUser || currentUser.role !== "ADMIN") {
     console.log(
-      `AdminPage - Access denied. User email: ${session.user.email}, role: ${session.user.role}`
+      `AdminPage - Access denied. User email: ${currentUser?.email}, role: ${currentUser?.role}`
     );
     redirect("/unauthorized");
   }
