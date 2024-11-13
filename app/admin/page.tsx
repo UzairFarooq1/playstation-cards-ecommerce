@@ -1,35 +1,23 @@
-import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+// app/admin/page.tsx
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../lib/auth";
 import AdminDashboard from "../components/AdminDashboard";
-
-const prisma = new PrismaClient();
+import { redirect } from "next/navigation";
+import { checkUserRole } from "../lib/auth-utils";
 
 export default async function AdminPage() {
-  // Fetch the currently logged-in user from the database
-  const currentUser = await prisma.user.findUnique({
-    where: {
-      email: "uzairf2580@gmail.com",
-    },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-    },
-  });
+  const session = await getServerSession(authOptions);
 
-  console.log(
-    "AdminPage - Current user:",
-    JSON.stringify(currentUser, null, 2)
-  );
-
-  // Check if the user has the "ADMIN" role
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    console.log(
-      `AdminPage - Access denied. User email: ${currentUser?.email}, role: ${currentUser?.role}`
-    );
-    redirect("/unauthorized");
+  if (!session || !session.user) {
+    // Redirect unauthenticated users to the login page
+    return redirect("/login");
   }
 
-  console.log("AdminPage - Access granted, rendering AdminDashboard");
+  if (!(await checkUserRole(session.user, ["ADMIN"]))) {
+    // Redirect non-admin users to an unauthorized page
+    return redirect("/unauthorized");
+  }
+
+  // Render the AdminDashboard component
   return <AdminDashboard />;
 }
