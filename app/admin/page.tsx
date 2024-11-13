@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "../lib/auth";
 import AdminDashboard from "../components/AdminDashboard";
+import { checkUserRole } from "../lib/auth-utils";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
@@ -13,10 +14,7 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
-  if (
-    session.user.email !== "uzairf2580@gmail.com" ||
-    session.user.role !== "ADMIN"
-  ) {
+  if (!(await checkUserRole(session.user, ["ADMIN"]))) {
     console.log(
       `AdminPage - Access denied. User email: ${session.user.email}, role: ${session.user.role}`
     );
