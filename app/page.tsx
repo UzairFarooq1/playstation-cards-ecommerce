@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
+  console.log("Home - Session:", JSON.stringify(session, null, 2));
+
   const featuredProducts = await prisma.product.findMany({
     take: 3,
   });

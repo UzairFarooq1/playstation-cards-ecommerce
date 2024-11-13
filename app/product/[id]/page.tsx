@@ -44,7 +44,7 @@ export default async function ProductPage(props: {
             src={product.imageUrl || "/placeholder.png"}
             alt={product.name}
             fill
-            className="rounded-lg shadow-lg object-cover"
+            className="rounded-lg shadow-lg object-contain"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
         </div>

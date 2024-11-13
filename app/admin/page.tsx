@@ -14,6 +14,11 @@ export default async function AdminPage() {
     redirect("/login");
   }
 
+  console.log(
+    "AdminPage - Session user:",
+    JSON.stringify(session.user, null, 2)
+  );
+
   if (!(await checkUserRole(session.user, ["ADMIN"]))) {
     console.log(
       `AdminPage - Access denied. User email: ${session.user.email}, role: ${session.user.role}`
