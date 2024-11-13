@@ -11,7 +11,7 @@ export default async function AdminPage() {
   if (!session) {
     console.log("AdminPage - No session, redirecting to login");
     redirect("/login");
-  } else if (session.user.role !== "ADMIN") {
+  } else if (session.user.email !== "uzairf2580@gmail.com") {
     console.log(
       `AdminPage - User role is ${session.user.role}, redirecting to unauthorized`
     );
