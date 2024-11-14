@@ -55,7 +55,7 @@ export default async function CategoryPage(props: PageProps) {
                   alt={product.name}
                   width={300}
                   height={300}
-                  className="mx-auto mb-4 rounded-lg h-[200px] object-cover"
+                  className="mx-auto mb-4 rounded-lg h-[200px] object-contain"
                 />
               </Link>
               <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
