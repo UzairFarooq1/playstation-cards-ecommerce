@@ -19,7 +19,7 @@ const ProductList = async () => {
                   src={product.imageUrl || "/api/placeholder/400/320"}
                   alt={product.name}
                   fill
-                  className="rounded-lg shadow-lg object-cover"
+                  className="rounded-lg shadow-lg object-contain"
                 />
               </div>
               <h3 className="text-lg font-semibold">{product.name}</h3>
