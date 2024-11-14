@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -13,13 +12,13 @@ import { ProductList } from "../components/ProductList";
 import { RecentOrders } from "../components/RecentOrders";
 import { redirect } from "next/navigation";
 
-export default function AdminDashboard() {
+export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const { toast } = useToast();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,23 +68,16 @@ export default function AdminDashboard() {
     fetchData();
   }, [toast]);
 
-  if (!session) {
-    const currentUser = {
-      email: "uzairf2580@gmail.com",
-      role: "ADMIN",
-    };
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
 
-    if (!currentUser || currentUser.role !== "ADMIN") {
-      console.log(
-        `AdminPage - Access denied. User email: ${currentUser?.email}, role: ${currentUser?.role}`
-      );
-      redirect("/unauthorized");
-    }
+  if (!session || session.user.role !== "ADMIN") {
     console.log(
       "AdminDashboard - Access denied. Session:",
       JSON.stringify(session, null, 2)
     );
-    return <div>Access Denied</div>;
+    redirect("/unauthorized");
   }
 
   return (
