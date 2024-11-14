@@ -92,7 +92,7 @@ export default function AdminPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
-          <p>Welcome, {session.user.name || session.user.email}</p>
+          {/* <p>Welcome, {session.user.name || session.user.email}</p> */}
           <Link href="/admin/add-product">
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
