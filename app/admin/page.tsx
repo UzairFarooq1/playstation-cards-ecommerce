@@ -18,10 +18,14 @@ export default function AdminPage() {
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { data: session, status } = useSession();
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const [
           productsResponse,
@@ -56,7 +60,10 @@ export default function AdminPage() {
         setRecentOrders(ordersData.slice(0, 5));
         setSalesData(salesData);
         setCategoryData(categoriesData);
+        setIsLoading(false);
       } catch (error) {
+        setIsLoading(false);
+
         toast({
           title: "Error",
           description: "Failed to fetch data. Please try again.",

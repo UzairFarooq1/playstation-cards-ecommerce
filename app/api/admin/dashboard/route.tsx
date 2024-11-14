@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 import prisma from "@/app/lib/prisma";
-import type { NextApiRequest, NextApiResponse } from "next";
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions);
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  console.log("Dashboard API - Session:", JSON.stringify(session, null, 2));
 
   if (!session || session.user?.role !== "ADMIN") {
     console.log("Unauthorized access attempt:", session?.user);
@@ -38,6 +39,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
         ORDER BY DATE_TRUNC('day', "createdAt")
       `,
     ]);
+
+    console.log("Dashboard data fetched successfully");
 
     return NextResponse.json({
       totalRevenue: totalRevenue._sum.total || 0,
