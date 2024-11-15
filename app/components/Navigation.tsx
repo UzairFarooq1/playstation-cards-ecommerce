@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSession, signIn, signOut } from "next-auth/react";
+import Image from "next/image";
 
 export function Navigation() {
   const { data: session } = useSession();
@@ -70,10 +71,14 @@ export function Navigation() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-2xl font-bold text-indigo-600">
-                PS Cards
+              <Link href="/" className="flex items-center space-x-2">
+                <Image src="/psn.png" width={50} height={50} alt="psn deals" />
+                <span className="text-2xl font-bold text-indigo-600">
+                  PSN Deals
+                </span>
               </Link>
             </div>
+
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
                 href="/"

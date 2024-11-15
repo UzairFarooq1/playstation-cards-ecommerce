@@ -38,7 +38,7 @@ export default async function Home() {
         />
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center p-8">
           <h1 className="text-5xl font-bold mb-4 text-white">
-            Welcome to PlayStation Cards
+            Welcome to PSN Deals
           </h1>
           <p className="text-2xl mb-8 text-white max-w-2xl">
             Discover the best deals on PlayStation gift cards and subscriptions!
