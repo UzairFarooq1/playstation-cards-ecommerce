@@ -102,7 +102,13 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <StatisticsOverview products={products} recentOrders={recentOrders} />
+      <StatisticsOverview
+        products={products}
+        recentOrders={recentOrders}
+        salesData={[]}
+        categoryData={[]}
+        userCount={0}
+      />
       <ChartsSection salesData={salesData} categoryData={categoryData} />
       <RecentOrders orders={recentOrders} />
       <ProductList products={products} onProductsChange={setProducts} />
