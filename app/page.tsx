@@ -93,23 +93,28 @@ export default async function Home() {
         </section>
 
         {/* Categories */}
-        <section className="py-12 bg-gray-100 rounded-xl">
-          <h2 className="text-3xl font-bold mb-8 text-center">Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+        <section className="py-16 bg-gradient-to-r from-gray-50 via-white to-gray-100 rounded-xl shadow-md">
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-10">
+            Explore Our Categories
+          </h2>
+          <div className=" grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 max-w-7xl mx-auto px-6">
             {uniqueCategories.map((category) => (
               <Card
                 key={category}
-                className="hover:shadow-lg transition-shadow"
+                className="group relative overflow-hidden rounded-lg shadow-lg transform hover:-translate-y-2 hover:shadow-2xl transition duration-300 bg-white border border-gray-200"
               >
-                <CardContent className="p-6 text-center">
+                <CardContent className="sm:px-5 relative z-10 p-8 text-center">
                   <Link
                     href={`/category/${category
                       .toLowerCase()
                       .replace(/\s+/g, "-")}`}
+                    className="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors"
                   >
                     {category}
                   </Link>
                 </CardContent>
+                {/* Hover Accent */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-50 opacity-0 group-hover:opacity-50 transition duration-300"></div>
               </Card>
             ))}
           </div>
