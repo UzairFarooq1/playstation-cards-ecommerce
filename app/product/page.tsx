@@ -22,13 +22,15 @@ const ProductList = async () => {
                   className="rounded-lg shadow-lg object-contain"
                 />
               </div>
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-gray-600 mb-2">
-                Ksh.{product.price.toFixed(2)}
-              </p>
-              <Button asChild>
-                <Link href={`/product/${product.id}`}>View Details</Link>
-              </Button>
+              <div className="flex flex-col justify-between items-center">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-600 mb-2">
+                  Ksh.{product.price.toFixed(2)}
+                </p>
+                <Button asChild>
+                  <Link href={`/product/${product.id}`}>View Details</Link>
+                </Button>
+              </div>
             </div>
           ))}
         </div>
