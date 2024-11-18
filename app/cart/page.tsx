@@ -179,7 +179,7 @@ export default function CartPage() {
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-20 h-20 object-cover rounded"
+                    className="w-20 h-20 object-contain rounded"
                   />
                   <div className="flex-grow">
                     <h2 className="text-xl font-semibold">{item.name}</h2>
@@ -266,7 +266,7 @@ export default function CartPage() {
                     {isCheckingOut ? (
                       <Loader className="mr-2 animate-spin" />
                     ) : (
-                      "Proceed to Checkout"
+                      "Send Enquiry"
                     )}
                   </Button>
                 </form>
@@ -275,12 +275,14 @@ export default function CartPage() {
 
             <Card className="w-full mt-4">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">Price Notice</h3>
-                <p className="text-sm text-gray-600">
-                  Please note that prices for our products may change due to
-                  fluctuations in the exchange market. The final price will be
-                  confirmed at the time of purchase.
-                </p>
+                <div className="bg-green-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+                  <h3 className="text-lg font-semibold mb-2">Price Notice</h3>
+                  <p className="text-sm text-gray-600">
+                    Please note that prices for our products may change due to
+                    fluctuations in the exchange market. The final price will be
+                    confirmed at the time of purchase.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
