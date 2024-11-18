@@ -14,14 +14,16 @@ export async function GET() {
     const categoryData = await prisma.product.groupBy({
       by: ['category'],
       _count: {
-        category: true,
+        id: true,
       },
     })
 
     const formattedCategoryData = categoryData.map((item) => ({
       name: item.category,
-      value: item._count.category,
+      value: item._count.id,
     }))
+
+    console.log("Category data:", formattedCategoryData);
 
     return NextResponse.json(formattedCategoryData)
   } catch (error) {

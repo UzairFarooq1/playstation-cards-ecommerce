@@ -25,3 +25,11 @@ export interface CategoryData {
   name: string;
   value: number;
 }
+
+// app/types.ts
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}

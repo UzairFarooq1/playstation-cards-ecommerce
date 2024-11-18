@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { StatisticsOverview } from "./StatisticsOverview";
 import { ChartsSection } from "./ChartsSection";
@@ -11,81 +11,87 @@ import { ProductList } from "./ProductList";
 import { Product, Order, SalesData, CategoryData } from "@/app/types";
 import { RecentOrders } from "./RecentOrders";
 import { useSession } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [userCount, setUserCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
+  const fetchAllData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        fetchProducts(),
+        fetchOrders(),
+        fetchSalesData(),
+        fetchCategoryData(),
+        fetchUserCount(),
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch dashboard data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchProducts();
-    fetchOrders();
-    fetchSalesData();
-    fetchCategoryData();
+    fetchAllData();
   }, []);
 
   const fetchProducts = async () => {
-    try {
-      const res = await fetch("/api/products");
-      if (!res.ok) throw new Error("Failed to fetch products");
-      const data: Product[] = await res.json();
-      setProducts(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch products. Please try again.",
-        variant: "destructive",
-      });
-    }
+    const res = await fetch("/api/products");
+    if (!res.ok) throw new Error("Failed to fetch products");
+    const data: Product[] = await res.json();
+    setProducts(data);
+    console.log("Fetched products:", data);
   };
 
   const fetchOrders = async () => {
-    try {
-      const res = await fetch("/api/orders");
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      const data: Order[] = await res.json();
-      setRecentOrders(data.slice(0, 5));
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch orders. Please try again.",
-        variant: "destructive",
-      });
-    }
+    const res = await fetch("/api/orders");
+    if (!res.ok) throw new Error("Failed to fetch orders");
+    const data: Order[] = await res.json();
+    setRecentOrders(data.slice(0, 5));
+    console.log("Fetched orders:", data);
   };
 
   const fetchSalesData = async () => {
-    try {
-      const res = await fetch("/api/sales");
-      if (!res.ok) throw new Error("Failed to fetch sales data");
-      const data: SalesData[] = await res.json();
-      setSalesData(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch sales data. Please try again.",
-        variant: "destructive",
-      });
-    }
+    const res = await fetch("/api/sales");
+    if (!res.ok) throw new Error("Failed to fetch sales data");
+    const data: SalesData[] = await res.json();
+    setSalesData(data);
+    console.log("Fetched sales data:", data);
   };
 
   const fetchCategoryData = async () => {
-    try {
-      const res = await fetch("/api/categories");
-      if (!res.ok) throw new Error("Failed to fetch category data");
-      const data: CategoryData[] = await res.json();
-      setCategoryData(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch category data. Please try again.",
-        variant: "destructive",
-      });
-    }
+    const res = await fetch("/api/categories");
+    if (!res.ok) throw new Error("Failed to fetch category data");
+    const data: CategoryData[] = await res.json();
+    setCategoryData(data);
+    console.log("Fetched category data:", data);
   };
+
+  const fetchUserCount = async () => {
+    const res = await fetch("/api/users/count");
+    if (!res.ok) throw new Error("Failed to fetch user count");
+    const data = await res.json();
+    setUserCount(data.totalUsers);
+    console.log("Fetched user count:", data.totalUsers);
+  };
+
+  if (status === "loading") {
+    return <Skeleton className="w-full h-screen" />;
+  }
 
   if (
     !session ||
@@ -97,7 +103,7 @@ export default function AdminDashboard() {
       "AdminDashboard - Access denied. Session:",
       JSON.stringify(session, null, 2)
     );
-    return <div>Access Denied</div>;
+    return <div className="text-center text-2xl mt-8">Access Denied</div>;
   }
 
   console.log("AdminDashboard - Access granted. User:", session.user);
@@ -108,6 +114,10 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
           <p>Welcome, {session.user.name || session.user.email}</p>
+          <Button onClick={fetchAllData} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh Data
+          </Button>
           <Link href="/admin/add-product">
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -117,10 +127,22 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <StatisticsOverview products={products} recentOrders={recentOrders} />
-      <ChartsSection salesData={salesData} categoryData={categoryData} />
-      <RecentOrders orders={recentOrders} />
-      <ProductList products={products} onProductsChange={setProducts} />
+      {isLoading ? (
+        <Skeleton className="w-full h-[200px]" />
+      ) : (
+        <>
+          <StatisticsOverview
+            products={products}
+            recentOrders={recentOrders}
+            categoryData={categoryData}
+            salesData={salesData}
+            userCount={userCount}
+          />
+          <ChartsSection salesData={salesData} categoryData={categoryData} />
+          <RecentOrders orders={recentOrders} />
+          <ProductList products={products} onProductsChange={setProducts} />
+        </>
+      )}
     </div>
   );
 }
