@@ -4,10 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
 
 // GET handler to fetch a single product
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -34,10 +32,8 @@ export async function GET(
 }
 
 // PUT handler to update a product
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const session = await getServerSession(authOptions);
 
