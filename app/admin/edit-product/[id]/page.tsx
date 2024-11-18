@@ -7,13 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/app/types";
 
-interface PageProps {
+// For client components in App Router, we need to use a synchronous params type
+type Props = {
   params: {
     id: string;
   };
-}
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
-export default function EditProductPage({ params }: PageProps) {
+export default function EditProductPage({ params, searchParams }: Props) {
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -85,8 +87,8 @@ export default function EditProductPage({ params }: PageProps) {
           <CardTitle>Edit Product</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
               <label htmlFor="name" className="block font-medium mb-1">
                 Name
               </label>
@@ -97,7 +99,7 @@ export default function EditProductPage({ params }: PageProps) {
                 required
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label htmlFor="description" className="block font-medium mb-1">
                 Description
               </label>
@@ -108,30 +110,33 @@ export default function EditProductPage({ params }: PageProps) {
                 required
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label htmlFor="price" className="block font-medium mb-1">
                 Price
               </label>
               <Input
                 id="price"
                 type="number"
+                step="0.01"
+                min="0"
                 value={price}
                 onChange={(e) => setPrice(parseFloat(e.target.value))}
                 required
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label htmlFor="imageUrl" className="block font-medium mb-1">
                 Image URL
               </label>
               <Input
                 id="imageUrl"
+                type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 required
               />
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full">
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </form>
