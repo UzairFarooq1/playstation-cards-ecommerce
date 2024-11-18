@@ -1,27 +1,17 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import prisma from "@/app/lib/prisma";
+import { Product } from "@/app/types";
 
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  imageUrl: string | null;
-  category: string | null;
-  stockQuantity: number;
-  sku: string;
-}
-
-type Params = Promise<{ id: string }>;
-
-export default function EditProductPage({ params }: { params: Params }) {
-  const { id } = use(params);
+export default function EditProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -33,19 +23,23 @@ export default function EditProductPage({ params }: { params: Params }) {
   // Fetch the product data
   useEffect(() => {
     const fetchProduct = async () => {
-      const product = await prisma.product.findUnique({
-        where: {
-          id,
-        },
-      });
-      setProduct(product);
-      setName(product?.name || "");
-      setDescription(product?.description || "");
-      setPrice(product?.price || 0);
-      setImageUrl(product?.imageUrl || "");
+      try {
+        const response = await fetch(`/api/products/${params.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch product");
+        }
+        const productData = await response.json();
+        setProduct(productData);
+        setName(productData.name || "");
+        setDescription(productData.description || "");
+        setPrice(productData.price || 0);
+        setImageUrl(productData.imageUrl || "");
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
     };
     fetchProduct();
-  }, [id]);
+  }, [params.id]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,17 +47,23 @@ export default function EditProductPage({ params }: { params: Params }) {
     setIsLoading(true);
 
     try {
-      await prisma.product.update({
-        where: {
-          id,
+      const response = await fetch(`/api/products/${params.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
         },
-        data: {
+        body: JSON.stringify({
           name,
           description,
           price,
           imageUrl,
-        },
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to update product");
+      }
+
       router.push("/admin/products");
     } catch (error) {
       console.error("Error updating product:", error);
@@ -71,6 +71,7 @@ export default function EditProductPage({ params }: { params: Params }) {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="container mx-auto p-4">
       <Card>
