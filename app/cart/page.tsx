@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CartItem {
   id: string;
@@ -165,100 +166,125 @@ export default function CartPage() {
           </Link>
         </p>
       ) : (
-        <>
-          <div className="space-y-4">
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex  items-center space-y-4 sm:space-y-0 sm:space-x-4 border-b pb-4"
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded"
-                />
-                <div className="flex-grow text-center sm:text-left">
-                  <h2 className="text-lg sm:text-xl font-semibold">
-                    {item.name}
-                  </h2>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    Ksh.{Number(item.price).toFixed(2)}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Subtotal: Ksh.
-                    {calculateItemTotal(item.price, item.quantity).toFixed(2)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 flex-col sm:flex-row space-x-2">
-                  <div className="flex items-center gap-2 pl-2">
-                    <Button
-                      onClick={() =>
-                        updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                      }
-                    >
-                      -
-                    </Button>
-                    <span>{item.quantity}</span>
-                    <Button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    >
-                      +
-                    </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Cart Items Column */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Cart Items</h2>
+            <div className="space-y-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center space-x-4 border-b pb-4"
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-20 h-20 object-cover rounded"
+                  />
+                  <div className="flex-grow">
+                    <h2 className="text-xl font-semibold">{item.name}</h2>
+                    <p className="text-gray-600">
+                      Ksh.{Number(item.price).toFixed(2)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Subtotal: Ksh.
+                      {calculateItemTotal(item.price, item.quantity).toFixed(2)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Button
+                        onClick={() =>
+                          updateQuantity(
+                            item.id,
+                            Math.max(1, item.quantity - 1)
+                          )
+                        }
+                      >
+                        -
+                      </Button>
+                      <span>{item.quantity}</span>
+                      <Button
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
+                      >
+                        +
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => removeItem(item.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <Button
-                      variant="destructive"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6">
-            <p className="text-lg sm:text-xl font-bold mb-4">
+              ))}
+            </div>
+            <p className="text-xl font-bold mt-4">
               Total: Ksh.{totalPrice.toFixed(2)}
             </p>
-            <form onSubmit={handleCheckout} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isCheckingOut}>
-                {isCheckingOut ? (
-                  <Loader className="mr-2" />
-                ) : (
-                  "Proceed to Checkout"
-                )}
-              </Button>
-            </form>
           </div>
-        </>
+
+          {/* Checkout and Price Note Column */}
+          <div>
+            <Card className="w-full">
+              <CardContent className="p-6 space-y-4">
+                <h2 className="text-xl font-semibold mb-4">Checkout</h2>
+                <form onSubmit={handleCheckout} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="address">Delivery Address</Label>
+                    <Input
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isCheckingOut}
+                  >
+                    {isCheckingOut ? (
+                      <Loader className="mr-2 animate-spin" />
+                    ) : (
+                      "Proceed to Checkout"
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="w-full mt-4">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-2">Price Notice</h3>
+                <p className="text-sm text-gray-600">
+                  Please note that prices for our products may change due to
+                  fluctuations in the exchange market. The final price will be
+                  confirmed at the time of purchase.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );

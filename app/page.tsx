@@ -74,13 +74,13 @@ export default async function Home() {
                     className="w-full h-[300px] object-contain cursor-pointer"
                   />
                 </Link>
-                <CardContent className="p-4">
-                  <CardHeader>
+                <CardContent className="p-4 flex flex-col items-center">
+                  <CardHeader className="w-full text-center">
                     <CardTitle className="text-lg font-semibold">
                       {product.name}
                     </CardTitle>
                   </CardHeader>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-gray-600 mb-4 text-center">
                     Ksh.{product.price.toFixed(2)}
                   </p>
                   <Button asChild>
