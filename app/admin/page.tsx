@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { Product, Order, SalesData, CategoryData } from "@/app/types";
 import { useSession } from "next-auth/react";
@@ -87,7 +87,11 @@ export default function AdminPage() {
   }, [toast]);
 
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center opacity-100">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+      </div>
+    );
   }
 
   if (!session || session.user.role !== "ADMIN") {
@@ -116,7 +120,9 @@ export default function AdminPage() {
       </div>
 
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="fixed inset-0 flex items-center justify-center opacity-100">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+        </div>
       ) : error ? (
         <div>{error}</div>
       ) : (

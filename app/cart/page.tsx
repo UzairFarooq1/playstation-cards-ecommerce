@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader } from "lucide-react";
+import { Loader, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CartItem {
@@ -147,7 +147,11 @@ export default function CartPage() {
   };
 
   if (isLoading) {
-    return <div className="container mx-auto p-4">Loading cart...</div>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center opacity-100">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+      </div>
+    );
   }
 
   return (

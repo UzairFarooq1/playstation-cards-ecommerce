@@ -90,6 +90,11 @@ export default async function Home() {
               </Card>
             ))}
           </div>
+          <div className="flex justify-center items-center mt-8">
+            <Button asChild>
+              <Link href={"/product"}>View More Products</Link>
+            </Button>
+          </div>
         </section>
 
         {/* Categories */}
