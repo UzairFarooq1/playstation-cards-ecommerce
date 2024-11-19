@@ -17,8 +17,6 @@ interface Product {
   category: string | null;
   stockQuantity: number;
   sku: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export default function EditProductForm({ product }: { product: Product }) {
@@ -64,7 +62,7 @@ export default function EditProductForm({ product }: { product: Product }) {
         throw new Error("Failed to update product");
       }
 
-      router.push("/admin/products");
+      router.push("/admin");
       router.refresh();
     } catch (error) {
       console.error("Error updating product:", error);
