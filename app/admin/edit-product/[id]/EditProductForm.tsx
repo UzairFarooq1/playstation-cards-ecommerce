@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface Product {
   id: string;
@@ -16,16 +17,34 @@ interface Product {
   category: string | null;
   stockQuantity: number;
   sku: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export default function EditProductForm({ product }: { product: Product }) {
-  const [name, setName] = useState(product.name);
-  const [description, setDescription] = useState(product.description || "");
-  const [price, setPrice] = useState(product.price);
-  const [imageUrl, setImageUrl] = useState(product.imageUrl || "");
+  const [formData, setFormData] = useState({
+    name: product.name,
+    description: product.description || "",
+    price: product.price,
+    imageUrl: product.imageUrl || "",
+    category: product.category || "",
+    stockQuantity: product.stockQuantity,
+    sku: product.sku,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        name === "price" || name === "stockQuantity" ? Number(value) : value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,12 +57,7 @@ export default function EditProductForm({ product }: { product: Product }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name,
-          description,
-          price,
-          imageUrl,
-        }),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -66,56 +80,101 @@ export default function EditProductForm({ product }: { product: Product }) {
         <CardTitle>Edit Product</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="name" className="block font-medium mb-1">
-              Name
-            </label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Name</Label>
             <Input
               id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               required
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="description" className="block font-medium mb-1">
-              Description
-            </label>
+
+          <div className="grid gap-2">
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="price" className="block font-medium mb-1">
-              Price
-            </label>
+
+          <div className="grid gap-2">
+            <Label htmlFor="price">Price</Label>
             <Input
               id="price"
+              name="price"
               type="number"
-              value={price}
-              onChange={(e) => setPrice(parseFloat(e.target.value))}
+              step="0.01"
+              value={formData.price}
+              onChange={handleChange}
               required
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="imageUrl" className="block font-medium mb-1">
-              Image URL
-            </label>
+
+          <div className="grid gap-2">
+            <Label htmlFor="imageUrl">Image URL</Label>
             <Input
               id="imageUrl"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="category">Category</Label>
+            <Input
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="stockQuantity">Stock Quantity</Label>
+            <Input
+              id="stockQuantity"
+              name="stockQuantity"
+              type="number"
+              value={formData.stockQuantity}
+              onChange={handleChange}
               required
             />
           </div>
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Changes"}
-          </Button>
+
+          <div className="grid gap-2">
+            <Label htmlFor="sku">SKU</Label>
+            <Input
+              id="sku"
+              name="sku"
+              value={formData.sku}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="text-red-500 text-sm font-medium">{error}</div>
+          )}
+
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
