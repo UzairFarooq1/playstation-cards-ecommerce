@@ -76,7 +76,7 @@ export default function EditProductPage({
         throw new Error("Failed to update product");
       }
 
-      router.push("/admin/products");
+      router.push("/admin");
     } catch (error) {
       console.error("Error updating product:", error);
       setError("Failed to update product. Please try again.");
