@@ -1,157 +1,34 @@
-"use client";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/lib/auth";
+import prisma from "@/app/lib/prisma";
+import { notFound, redirect } from "next/navigation";
+import EditProductForm from "./EditProductForm";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  imageUrl: string | null;
-  category: string | null;
-  stockQuantity: number;
-  sku: string;
-}
-
-export default function EditProductPage({
+export default async function EditProductPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(0);
-  const [imageUrl, setImageUrl] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
+  const session = await getServerSession(authOptions);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await fetch(`/api/products/${params.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch product");
-        }
-        const data = await response.json();
-        setProduct(data);
-        setName(data.name || "");
-        setDescription(data.description || "");
-        setPrice(data.price || 0);
-        setImageUrl(data.imageUrl || "");
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setError("Failed to load product. Please try again.");
-      }
-    };
-    fetchProduct();
-  }, [params.id]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(`/api/products/${params.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          price,
-          imageUrl,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update product");
-      }
-
-      router.push("/admin");
-    } catch (error) {
-      console.error("Error updating product:", error);
-      setError("Failed to update product. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/login");
   }
 
+  const product = await prisma.product.findUnique({
+    where: {
+      id: params.id,
+    },
+  });
+
   if (!product) {
-    return <div>Loading...</div>;
+    notFound();
   }
 
   return (
     <div className="container mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Product</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block font-medium mb-1">
-                Name
-              </label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block font-medium mb-1">
-                Description
-              </label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="price" className="block font-medium mb-1">
-                Price
-              </label>
-              <Input
-                id="price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(parseFloat(e.target.value))}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="imageUrl" className="block font-medium mb-1">
-                Image URL
-              </label>
-              <Input
-                id="imageUrl"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <h1 className="text-2xl font-bold mb-4">Edit Product</h1>
+      <EditProductForm product={product} />
     </div>
   );
 }
