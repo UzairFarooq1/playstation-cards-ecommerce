@@ -6,22 +6,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Product } from "@/app/types";
 
-type PageProps = {
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  imageUrl: string | null;
+  category: string | null;
+  stockQuantity: number;
+  sku: string;
+}
+
+export default function EditProductPage({
+  params,
+}: {
   params: { id: string };
-};
-
-export default function EditProductPage({ params }: PageProps) {
+}) {
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  // Fetch the product data
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -29,23 +39,24 @@ export default function EditProductPage({ params }: PageProps) {
         if (!response.ok) {
           throw new Error("Failed to fetch product");
         }
-        const productData = await response.json();
-        setProduct(productData);
-        setName(productData.name || "");
-        setDescription(productData.description || "");
-        setPrice(productData.price || 0);
-        setImageUrl(productData.imageUrl || "");
+        const data = await response.json();
+        setProduct(data);
+        setName(data.name || "");
+        setDescription(data.description || "");
+        setPrice(data.price || 0);
+        setImageUrl(data.imageUrl || "");
       } catch (error) {
         console.error("Error fetching product:", error);
+        setError("Failed to load product. Please try again.");
       }
     };
     fetchProduct();
   }, [params.id]);
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
       const response = await fetch(`/api/products/${params.id}`, {
@@ -68,10 +79,15 @@ export default function EditProductPage({ params }: PageProps) {
       router.push("/admin/products");
     } catch (error) {
       console.error("Error updating product:", error);
+      setError("Failed to update product. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   if (!product) {
     return <div>Loading...</div>;
@@ -84,8 +100,8 @@ export default function EditProductPage({ params }: PageProps) {
           <CardTitle>Edit Product</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
               <label htmlFor="name" className="block font-medium mb-1">
                 Name
               </label>
@@ -96,7 +112,7 @@ export default function EditProductPage({ params }: PageProps) {
                 required
               />
             </div>
-            <div>
+            <div className="mb-4">
               <label htmlFor="description" className="block font-medium mb-1">
                 Description
               </label>
@@ -107,33 +123,30 @@ export default function EditProductPage({ params }: PageProps) {
                 required
               />
             </div>
-            <div>
+            <div className="mb-4">
               <label htmlFor="price" className="block font-medium mb-1">
                 Price
               </label>
               <Input
                 id="price"
                 type="number"
-                step="0.01"
-                min="0"
                 value={price}
                 onChange={(e) => setPrice(parseFloat(e.target.value))}
                 required
               />
             </div>
-            <div>
+            <div className="mb-4">
               <label htmlFor="imageUrl" className="block font-medium mb-1">
                 Image URL
               </label>
               <Input
                 id="imageUrl"
-                type="url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 required
               />
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full">
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </form>

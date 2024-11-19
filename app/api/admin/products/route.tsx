@@ -1,21 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/app/lib/prisma";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/lib/auth";
+import prisma from "@/app/lib/prisma";
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+      },
     });
 
     if (!product) {
@@ -26,32 +28,33 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching product:", error);
     return NextResponse.json(
-      { error: "Failed to fetch product" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
+    const { name, description, price, imageUrl } = await request.json();
 
     const updatedProduct = await prisma.product.update({
-      where: { id: params.id },
+      where: {
+        id: params.id,
+      },
       data: {
-        name: body.name,
-        description: body.description,
-        price: parseFloat(body.price),
-        imageUrl: body.imageUrl,
+        name,
+        description,
+        price: parseFloat(price),
+        imageUrl,
       },
     });
 
@@ -59,7 +62,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json(
-      { error: "Failed to update product" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
