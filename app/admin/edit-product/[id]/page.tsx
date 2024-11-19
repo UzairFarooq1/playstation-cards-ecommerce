@@ -4,11 +4,12 @@ import prisma from "@/app/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import EditProductForm from "./EditProductForm";
 
-export default async function EditProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function EditProductPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== "ADMIN") {
