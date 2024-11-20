@@ -64,17 +64,17 @@ export function StatisticsOverview({
         <CardContent className="p-6">
           <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
           <p className="text-2xl font-bold mt-2">
-            ${stats.totalRevenue.toFixed(2)}
+            Ksh.{stats.totalRevenue.toFixed(2)}
           </p>
         </CardContent>
       </Card>
       <Card>
-        <CardContent className="p-6">
+        {/* <CardContent className="p-6">
           <h3 className="text-sm font-medium text-gray-500">Average Price</h3>
           <p className="text-2xl font-bold mt-2">
             ${stats.averagePrice.toFixed(2)}
           </p>
-        </CardContent>
+        </CardContent> */}
       </Card>
       <Card>
         <CardContent className="p-6">
@@ -82,7 +82,7 @@ export function StatisticsOverview({
             Average Order Value
           </h3>
           <p className="text-2xl font-bold mt-2">
-            ${stats.averageOrderValue.toFixed(2)}
+            Ksh.{stats.averageOrderValue.toFixed(2)}
           </p>
         </CardContent>
       </Card>
