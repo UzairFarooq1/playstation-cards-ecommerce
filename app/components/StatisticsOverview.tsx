@@ -68,14 +68,14 @@ export function StatisticsOverview({
           </p>
         </CardContent>
       </Card>
-      <Card>
-        {/* <CardContent className="p-6">
+      {/* <Card>
+        <CardContent className="p-6">
           <h3 className="text-sm font-medium text-gray-500">Average Price</h3>
           <p className="text-2xl font-bold mt-2">
             ${stats.averagePrice.toFixed(2)}
           </p>
-        </CardContent> */}
-      </Card>
+        </CardContent>
+      </Card> */}
       <Card>
         <CardContent className="p-6">
           <h3 className="text-sm font-medium text-gray-500">

@@ -9,8 +9,8 @@ import LoadingSpinner from "./loading";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "PlayStation Cards Ecommerce",
-  description: "Buy PlayStation cards online",
+  title: "PSN Deals",
+  description: "Buy PlayStation cards and subscriptions online",
 };
 
 export default function RootLayout({

@@ -7,11 +7,11 @@ import { Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { StatisticsOverview } from "./StatisticsOverview";
 import { ChartsSection } from "./ChartsSection";
-import { ProductList } from "./ProductList";
 import { Product, Order, SalesData, CategoryData } from "@/app/types";
 import { RecentOrders } from "./RecentOrders";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProductList } from "./ProductList";
 
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -139,7 +139,6 @@ export default function AdminDashboard() {
             userCount={userCount}
           />
           <ChartsSection salesData={salesData} categoryData={categoryData} />
-          <RecentOrders orders={recentOrders} />
           <ProductList products={products} onProductsChange={setProducts} />
         </>
       )}

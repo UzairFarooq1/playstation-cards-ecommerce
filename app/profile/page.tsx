@@ -290,7 +290,7 @@ export default function ProfilePage() {
                         <strong>Order ID:</strong> {order.id}
                       </p>
                       <p>
-                        <strong>Total:</strong> ${order.total.toFixed(2)}
+                        <strong>Total:</strong> Ksh.{order.total.toFixed(2)}
                       </p>
                       <p>
                         <strong>Status:</strong> {order.status}

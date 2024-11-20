@@ -11,6 +11,10 @@ export interface Product {
 
 export interface Order {
   id: string;
+  user: {
+    name: string | null;
+    email: string;
+  };
   total: number;
   status: string;
   createdAt: string;

@@ -4,14 +4,6 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Search, Edit, Trash2, ArrowUpDown } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/app/types";
 
@@ -35,8 +27,6 @@ type SortKey = keyof Product;
 
 export function ProductList({ products, onProductsChange }: ProductListProps) {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [priceFilter, setPriceFilter] = useState("all");
   const [sortConfig, setSortConfig] = useState<{
     key: SortKey;
     direction: "asc" | "desc";
@@ -50,33 +40,10 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchTerm, priceFilter, sortConfig]);
+  }, [products, sortConfig]);
 
   const filterAndSortProducts = () => {
-    let filtered = [...products];
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    const averagePrice =
-      products.reduce((sum, product) => sum + product.price, 0) /
-      products.length;
-
-    switch (priceFilter) {
-      case "low":
-        filtered = filtered.filter((product) => product.price < averagePrice);
-        break;
-      case "high":
-        filtered = filtered.filter((product) => product.price >= averagePrice);
-        break;
-    }
-
-    filtered.sort((a, b) => {
+    const sortedProducts = [...products].sort((a, b) => {
       if (sortConfig.key === "price") {
         return sortConfig.direction === "asc"
           ? a.price - b.price
@@ -97,14 +64,13 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
             : bValue.localeCompare(aValue);
         }
 
-        // Fallback for non-string comparisons
         if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
         if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       }
     });
 
-    setFilteredProducts(filtered);
+    setFilteredProducts(sortedProducts);
   };
 
   const handleSort = (key: SortKey) => {
@@ -137,20 +103,12 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
         description: "Product deleted successfully!",
       });
     } catch (error) {
-      if (error instanceof Error) {
-        toast({
-          title: "Error",
-          description:
-            error.message || "Failed to delete product. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "An unknown error occurred. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete product.",
+        variant: "destructive",
+      });
     } finally {
       setDeleteProductId(null);
     }
@@ -162,46 +120,22 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={priceFilter} onValueChange={setPriceFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Prices</SelectItem>
-            <SelectItem value="low">Below Average</SelectItem>
-            <SelectItem value="high">Above Average</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => handleSort("name")}
-            className="flex items-center gap-2"
-          >
-            Name
-            <ArrowUpDown className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleSort("price")}
-            className="flex items-center gap-2"
-          >
-            Price
-            <ArrowUpDown className="w-4 h-4" />
-          </Button>
-        </div>
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant="outline"
+          onClick={() => handleSort("name")}
+          className="flex items-center gap-2"
+        >
+          Name
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => handleSort("price")}
+          className="flex items-center gap-2"
+        >
+          Price
+        </Button>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => (
           <Card key={product.id} className="hover:shadow-lg transition-shadow">
@@ -212,9 +146,7 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
                 className="w-full h-48 object-contain mb-4 rounded"
               />
               <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-              <p className="text-gray-600 mb-2 line-clamp-2">
-                {product.description}
-              </p>
+              <p className="text-gray-600 mb-2">{product.description}</p>
               <p className="text-lg font-semibold mb-4">
                 Ksh.{product.price.toFixed(2)}
               </p>
@@ -224,21 +156,20 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
                   size="sm"
                   onClick={() => handleEdit(product.id)}
                 >
-                  <Edit className="w-4 h-4" />
+                  Edit
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setDeleteProductId(product.id)}
                 >
-                  <Trash2 className="w-4 h-4 text-red-500" />
+                  Delete
                 </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
       <AlertDialog
         open={!!deleteProductId}
         onOpenChange={() => setDeleteProductId(null)}
@@ -247,18 +178,12 @@ export function ProductList({ products, onProductsChange }: ProductListProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              product.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

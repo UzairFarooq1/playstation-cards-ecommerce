@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,9 @@ import { Product, Order, SalesData, CategoryData } from "@/app/types";
 import { useSession } from "next-auth/react";
 import { StatisticsOverview } from "../components/StatisticsOverview";
 import { ChartsSection } from "../components/ChartsSection";
-import { ProductList } from "../components/ProductList";
 import { RecentOrders } from "../components/RecentOrders";
 import { redirect } from "next/navigation";
+import { ProductList } from "../components/ProductList";
 
 export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -35,21 +36,28 @@ export default function AdminPage() {
           categoriesResponse,
           userCountResponse,
         ] = await Promise.all([
-          fetch("/api/products"),
-          fetch("/api/orders"),
+          fetch("/api/products?limit=3"),
+          fetch("/api/orders?limit=5"),
           fetch("/api/sales"),
           fetch("/api/categories"),
           fetch("/api/users/count"),
         ]);
 
-        if (
-          !productsResponse.ok ||
-          !ordersResponse.ok ||
-          !salesResponse.ok ||
-          !categoriesResponse.ok ||
-          !userCountResponse.ok
-        ) {
-          throw new Error("Failed to fetch data");
+        const responses = [
+          productsResponse,
+          ordersResponse,
+          salesResponse,
+          categoriesResponse,
+          userCountResponse,
+        ];
+
+        for (const response of responses) {
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              `${response.url}: ${errorData.error || response.statusText}`
+            );
+          }
         }
 
         const [
@@ -58,28 +66,22 @@ export default function AdminPage() {
           salesData,
           categoriesData,
           userCountData,
-        ] = await Promise.all([
-          productsResponse.json(),
-          ordersResponse.json(),
-          salesResponse.json(),
-          categoriesResponse.json(),
-          userCountResponse.json(),
-        ]);
+        ] = await Promise.all(responses.map((r) => r.json()));
 
         setProducts(productsData);
-        setRecentOrders(ordersData.slice(0, 5));
+        setRecentOrders(ordersData.orders);
         setSalesData(salesData);
         setCategoryData(categoriesData);
         setUserCount(userCountData.totalUsers);
-        setIsLoading(false);
       } catch (error) {
-        setIsLoading(false);
-        setError("Failed to fetch data. Please try again.");
+        setError(`Failed to fetch data:`);
         toast({
           title: "Error",
-          description: "Failed to fetch data. Please try again.",
+          description: `Failed to fetch data:`,
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -108,7 +110,7 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
           <div className="hidden md:block">
-            <p> Welcome, {session.user.name || session.user.email}</p>
+            <p>Welcome, {session.user.name || session.user.email}</p>
           </div>
           <Link href="/admin/add-product">
             <Button className="flex items-center gap-2">
@@ -119,26 +121,47 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="fixed inset-0 flex items-center justify-center opacity-100">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-800" />
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
         </div>
-      ) : error ? (
-        <div>{error}</div>
-      ) : (
-        <>
-          <StatisticsOverview
-            products={products}
-            recentOrders={recentOrders}
-            salesData={salesData}
-            categoryData={categoryData}
-            userCount={userCount}
-          />
-          <ChartsSection salesData={salesData} categoryData={categoryData} />
-          <RecentOrders orders={recentOrders} />
-          <ProductList products={products} onProductsChange={setProducts} />
-        </>
       )}
+
+      <StatisticsOverview
+        products={products}
+        recentOrders={recentOrders}
+        salesData={salesData}
+        categoryData={categoryData}
+        userCount={userCount}
+      />
+      <ChartsSection salesData={salesData} categoryData={categoryData} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Recent Orders */}
+        <RecentOrders
+          orders={recentOrders}
+          isLoading={isLoading}
+          error={error}
+        />
+
+        {/* Product List with View All Button */}
+        <div>
+          <ProductList
+            products={products.slice(0, 3)} // Show only the first three products
+            onProductsChange={setProducts}
+          />
+          <div className="mt-4 flex justify-center">
+            <Link href="/admin/products">
+              <Button variant="outline" className="w-full md:w-auto">
+                View All Products
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
